@@ -10,13 +10,6 @@ module.exports = {
 	},
 
 	env : {
-		"amd" : true
+		"node" : true
 	},
-
-	globals : {
-		"setImmediate" : true,
-		"not"          : true,
-		"module"       : true,
-		"humanizeJoin" : true
-	}
 };
