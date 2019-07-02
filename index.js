@@ -96,7 +96,7 @@ module.exports = {
 		'space-in-parens'         : [ 'error', 'never' ],
 		'space-infix-ops'         : [ 'error' ],
 		'space-unary-ops'         : [ 'error', { words : true, nonwords : false } ],
-		'spaced-comment'          : [ 'error', 'always' ],
+		'spaced-comment'          : [ 'error', 'always', { markers : [ '/' ] } ],
 		'arrow-parens'            : [ 'error', 'as-needed' ],
 		'arrow-spacing'           : [ 'error' ],
 		'generator-star-spacing'  : [ 'error', 'neither' ],
