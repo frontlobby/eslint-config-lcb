@@ -126,7 +126,7 @@ module.exports = {
 		'@typescript-eslint/no-array-constructor'          : 'error',
 		'@typescript-eslint/no-empty-interface'            : 'error',
 		'@typescript-eslint/no-explicit-any'               : 'off',
-		'@typescript-eslint/no-inferrable-types'           : 'error',
+		'@typescript-eslint/no-inferrable-types'           : [ 'error', { ignoreProperties : true } ],
 		'@typescript-eslint/no-misused-new'                : 'error',
 		'@typescript-eslint/no-namespace'                  : 'error',
 		'@typescript-eslint/no-non-null-assertion'         : 'error',
