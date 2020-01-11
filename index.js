@@ -38,6 +38,7 @@ module.exports = {
 		'no-loop-func'          : 'error',
 		'no-implied-eval'       : 'error',
 		'no-buffer-constructor' : 'error',
+		'no-prototype-builtins' : 'off',		// turning off because this only slightly improves reliability at the expense of readability
 
 		// Stylistic
 		'arrow-body-style'         : [ 'error' ],
@@ -139,6 +140,7 @@ module.exports = {
 		'@typescript-eslint/consistent-type-definitions'   : [ 'error', 'interface' ],
 		'@typescript-eslint/prefer-namespace-keyword'      : 'error',
 		'@typescript-eslint/type-annotation-spacing'       : 'error',
+		'@typescript-eslint/ban-ts-ignore'                 : 'off',		// allow @ts-ignore since it's useful sometimes
 
 		// custom rules
 		'local-rules/align-assign' : [ 'error', { maxSpaces : 25 } ],
