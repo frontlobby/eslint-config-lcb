@@ -1,6 +1,7 @@
 module.exports = {
 	extends : [
 		'eslint:recommended',
+		'plugin:@typescript-eslint/eslint-recommended',
 		'plugin:@typescript-eslint/recommended',                 // typescript extensions
 	],
 
@@ -9,6 +10,7 @@ module.exports = {
 	env : { es6 : true },
 
 	plugins : [
+		'@typescript-eslint',
 		'eslint-plugin-local-rules',
 	],
 
@@ -37,15 +39,10 @@ module.exports = {
 		'no-implied-eval'       : 'error',
 		'no-buffer-constructor' : 'error',
 
-		// Variables
-		'no-unused-vars' : 'error',
-
 		// Stylistic
 		'arrow-body-style'         : [ 'error' ],
 		'block-spacing'            : [ 'error' ],
 		'brace-style'              : [ 'error', 'stroustrup' ],
-		'camelcase'                : [ 'error', { properties : 'always' } ],
-		'no-array-constructor'     : [ 'error' ],
 		'no-nested-ternary'        : [ 'error' ],
 		'no-mixed-spaces-and-tabs' : [ 'error', 'smart-tabs' ],
 		'object-property-newline'  : [ 'error', { allowMultiplePropertiesPerLine : true } ],
@@ -67,7 +64,6 @@ module.exports = {
 		'curly'                 : [ 'error' ],
 		'eol-last'              : [ 'error', 'always' ],
 		'func-call-spacing'     : [ 'error' ],
-		'indent'                : [ 'error', 'tab', { SwitchCase : 1 } ],
 		'key-spacing'           : [ 'error', {
 			beforeColon : true,
 			afterColon  : true,
