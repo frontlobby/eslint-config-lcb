@@ -135,7 +135,7 @@ module.exports = {
 		'no-unused-vars'                                   : 'off',
 		'@typescript-eslint/no-unused-vars'                : 'error',
 		'no-use-before-define'                             : 'off',
-		'@typescript-eslint/no-use-before-define'          : [ 'error', { functions : false } ],
+		'@typescript-eslint/no-use-before-define'          : [ 'off', { functions : false } ],		// off because it keeps flagging too many false positives
 		'@typescript-eslint/no-var-requires'               : 'error',
 		'@typescript-eslint/consistent-type-definitions'   : [ 'error', 'interface' ],
 		'@typescript-eslint/prefer-namespace-keyword'      : 'error',
@@ -143,6 +143,7 @@ module.exports = {
 		'@typescript-eslint/ban-ts-ignore'                 : 'off',		// allow @ts-ignore since it's useful sometimes
 
 		// custom rules
-		'local-rules/align-assign' : [ 'error', { maxSpaces : 25 } ],
+		'local-rules/align-assign'  : [ 'error', { maxSpaces : 25 } ],
+		'local-rules/align-imports' : [ 'error', { maxSpaces : 30, collapseExtraSpaces : true } ],
 	},
 };
