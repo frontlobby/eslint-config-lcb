@@ -34,7 +34,7 @@ module.exports = {
 
 		// Best Practices
 		'no-eval'               : 'error',
-		'no-else-return'        : 'error',
+		'no-else-return'        : [ 'error', { allowElseIf : false } ],
 		'no-loop-func'          : 'error',
 		'no-implied-eval'       : 'error',
 		'no-buffer-constructor' : 'error',

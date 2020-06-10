@@ -1,6 +1,6 @@
 {
   "name": "@lcbapp/eslint-config-lcb",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "This holds the base shop standard ESLint configuration file.",
   "license": "MIT",
   "repository": {
