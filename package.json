@@ -8,7 +8,7 @@
     "url": "git+https://github.com/lcbapp/eslint-config-lcb.git"
   },
   "dependencies": {
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.19",
     "requireindex": "^1.1.0",
     "eslint-plugin-local-rules": "^0.1.0",
     "typescript": "^3.5.2",
