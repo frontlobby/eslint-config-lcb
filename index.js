@@ -2,10 +2,14 @@ module.exports = {
 	extends : [
 		'eslint:recommended',
 		'plugin:@typescript-eslint/eslint-recommended',
-		'plugin:@typescript-eslint/recommended',                 // typescript extensions
+		'plugin:@typescript-eslint/recommended', // typescript extensions
+		'plugin:vue/recommended',
 	],
 
-	parserOptions : { ecmaVersion : 6 },
+	parserOptions : { 
+		ecmaVersion : 2018,
+		parser: '@typescript-eslint/parser',
+	},
 
 	env : { es6 : true },
 
