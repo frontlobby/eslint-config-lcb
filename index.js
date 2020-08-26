@@ -1,14 +1,16 @@
 module.exports = {
 	extends : [
+		'plugin:vue/recommended',
 		'eslint:recommended',
 		'plugin:@typescript-eslint/eslint-recommended',
 		'plugin:@typescript-eslint/recommended', // typescript extensions
-		'plugin:vue/recommended',
 	],
 
+	parser: require.resolve('vue-eslint-parser'),
+
 	parserOptions : { 
+		parser: require.resolve('@typescript-eslint/parser'),
 		ecmaVersion : 2018,
-		parser: '@typescript-eslint/parser',
 	},
 
 	env : { es6 : true },
@@ -145,6 +147,26 @@ module.exports = {
 		'@typescript-eslint/prefer-namespace-keyword'      : 'error',
 		'@typescript-eslint/type-annotation-spacing'       : 'error',
 		'@typescript-eslint/ban-ts-ignore'                 : 'off',		// allow @ts-ignore since it's useful sometimes
+
+		// vue specific rules
+		'vue/html-indent'             : [ 'error', 'tab' ],
+		'vue/array-bracket-spacing'   : [ 'error', 'always', { objectsInArrays : true, arraysInArrays : true } ],
+		'vue/arrow-spacing'           : [ 'error' ],
+		'vue/block-spacing'           : [ 'error' ],
+		'vue/brace-style'             : [ 'error', 'stroustrup' ],
+		'vue/camelcase'               : [ 'error' ],
+		'vue/comma-dangle'            : [ 'error', { objects : 'always-multiline', arrays : 'always-multiline', functions : 'never' } ],
+		'vue/dot-location'            : [ 'error', 'property' ],
+		'vue/key-spacing'             : [ 'error', {
+			beforeColon : true,
+			afterColon  : true,
+			align       : 'colon',
+		} ],
+		'vue/keyword-spacing'         : [ 'error' ],
+		'vue/no-irregular-whitespace' : 'error',
+		'vue/object-curly-spacing'    : [ 'error', 'always' ],
+		'vue/space-infix-ops'         : [ 'error' ],
+		'vue/space-unary-ops'         : [ 'error', { words : true, nonwords : false } ],
 
 		// custom rules
 		'local-rules/align-assign'  : [ 'error', { maxSpaces : 25 } ],
