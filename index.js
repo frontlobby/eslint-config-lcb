@@ -8,7 +8,7 @@ module.exports = {
 
 	parser: require.resolve('vue-eslint-parser'),
 
-	parserOptions : { 
+	parserOptions : {
 		parser: require.resolve('@typescript-eslint/parser'),
 		ecmaVersion : 2018,
 	},
@@ -163,10 +163,11 @@ module.exports = {
 			align       : 'colon',
 		} ],
 		'vue/keyword-spacing'         : [ 'error' ],
-		'vue/no-irregular-whitespace' : 'error',
+		'vue/no-irregular-whitespace' : [ 'error' ],
 		'vue/object-curly-spacing'    : [ 'error', 'always' ],
 		'vue/space-infix-ops'         : [ 'error' ],
 		'vue/space-unary-ops'         : [ 'error', { words : true, nonwords : false } ],
+		'vue/max-attributes-per-line' : [ 'error', { singleline : 3, } ],
 
 		// custom rules
 		'local-rules/align-assign'  : [ 'error', { maxSpaces : 25 } ],
