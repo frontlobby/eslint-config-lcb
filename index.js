@@ -6,10 +6,10 @@ module.exports = {
 		'plugin:@typescript-eslint/recommended', // typescript extensions
 	],
 
-	parser: require.resolve('vue-eslint-parser'),
+	parser : require.resolve('vue-eslint-parser'),
 
 	parserOptions : {
-		parser: require.resolve('@typescript-eslint/parser'),
+		parser      : require.resolve('@typescript-eslint/parser'),
 		ecmaVersion : 2018,
 	},
 
@@ -118,15 +118,12 @@ module.exports = {
 		// typescript specific rules
 		'@typescript-eslint/adjacent-overload-signatures'  : 'error',
 		'@typescript-eslint/array-type'                    : 'error',
-		'@typescript-eslint/ban-types'                     : 'error',
-		'camelcase'                                        : 'off',
-		'@typescript-eslint/camelcase'                     : 'error',
-		'@typescript-eslint/class-name-casing'             : 'error',
+		'@typescript-eslint/ban-types'                     : 'warn',
 		'@typescript-eslint/explicit-function-return-type' : 'off',
 		'@typescript-eslint/explicit-member-accessibility' : 'off',
+		'@typescript-eslint/explicit-module-boundary-types' : 'off',
 		'indent'                                           : 'off',
 		'@typescript-eslint/indent'                        : [ 'error', 'tab', { SwitchCase : 1, ImportDeclaration : 'first' } ],
-		'@typescript-eslint/interface-name-prefix'         : 'error',
 		'@typescript-eslint/member-delimiter-style'        : 'error',
 		'no-array-constructor'                             : 'off',
 		'@typescript-eslint/no-array-constructor'          : 'error',
@@ -146,18 +143,52 @@ module.exports = {
 		'@typescript-eslint/consistent-type-definitions'   : [ 'error', 'interface' ],
 		'@typescript-eslint/prefer-namespace-keyword'      : 'error',
 		'@typescript-eslint/type-annotation-spacing'       : 'error',
-		'@typescript-eslint/ban-ts-ignore'                 : 'off',		// allow @ts-ignore since it's useful sometimes
+		'@typescript-eslint/ban-ts-comment'                : [ 'error', { 'ts-ignore' : 'allow-with-description' } ],		// allow @ts-ignore since it's useful sometimes
+		'@typescript-eslint/no-floating-promises'          : [ 'error', { ignoreVoid : true, ignoreIIFE: true } ],
+		'@typescript-eslint/naming-convention' : [ "error",
+			{
+				selector           : 'enumMember',
+				format             : [ 'camelCase', 'PascalCase' ],
+			}, {
+				selector           : 'variable',
+				modifiers          : [ 'const' ],
+				format             : [ 'camelCase', 'UPPER_CASE', 'PascalCase' ],
+				leadingUnderscore  : 'allow',
+				trailingUnderscore : 'allow',
+			}, {
+				selector           : 'function',
+				modifiers          : [ 'global', 'exported' ],
+				format             : [ 'camelCase', 'PascalCase' ],
+			}, {
+				selector           : [ 'objectLiteralProperty', 'typeProperty' ],
+				format             : [ 'camelCase', 'UPPER_CASE', 'PascalCase' ],
+				leadingUnderscore  : 'allow',
+			}, {
+				selector           : [ 'accessor', 'objectLiteralMethod' ],
+				format             : [ 'camelCase', 'PascalCase' ],
+				leadingUnderscore  : 'allow',
+			}, {
+				selector           : 'typeLike',
+				format             : [ 'PascalCase' ],
+			}, {
+				selector           : 'default',
+				format             : [ 'camelCase' ],
+				leadingUnderscore  : 'allow',
+				trailingUnderscore : 'allow',
+			},
+		],
 
 		// vue specific rules
-		'vue/html-indent'             : [ 'error', 'tab' ],
-		'vue/array-bracket-spacing'   : [ 'error', 'always', { objectsInArrays : true, arraysInArrays : true } ],
-		'vue/arrow-spacing'           : [ 'error' ],
-		'vue/block-spacing'           : [ 'error' ],
-		'vue/brace-style'             : [ 'error', 'stroustrup' ],
-		'vue/camelcase'               : [ 'error' ],
-		'vue/comma-dangle'            : [ 'error', { objects : 'always-multiline', arrays : 'always-multiline', functions : 'never' } ],
-		'vue/dot-location'            : [ 'error', 'property' ],
-		'vue/key-spacing'             : [ 'error', {
+		'vue/html-indent'                      : [ 'error', 'tab' ],
+		'vue/array-bracket-spacing'            : [ 'error', 'always', { objectsInArrays: true, arraysInArrays      : true } ],
+		'vue/arrow-spacing'                    : [ 'error' ],
+		'vue/block-spacing'                    : [ 'error' ],
+		'vue/brace-style'                      : [ 'error', 'stroustrup' ],
+		'vue/camelcase'                        : [ 'error' ],
+		'vue/comma-dangle'                     : [ 'error', { objects                  : 'always-multiline', arrays: 'always-multiline', functions: 'never' } ],
+		'vue/component-definition-name-casing' : [ 'error', 'kebab-case' ],
+		'vue/dot-location'                     : [ 'error', 'property' ],
+		'vue/key-spacing'                      : [ 'error', {
 			beforeColon : true,
 			afterColon  : true,
 			align       : 'colon',
@@ -167,7 +198,7 @@ module.exports = {
 		'vue/object-curly-spacing'    : [ 'error', 'always' ],
 		'vue/space-infix-ops'         : [ 'error' ],
 		'vue/space-unary-ops'         : [ 'error', { words : true, nonwords : false } ],
-		'vue/max-attributes-per-line' : [ 'error', { singleline : 3, } ],
+		'vue/max-attributes-per-line' : [ 'error', { singleline : 3 } ],
 
 		// custom rules
 		'local-rules/align-assign'  : [ 'error', { maxSpaces : 25 } ],
