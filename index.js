@@ -54,6 +54,7 @@ module.exports = {
 		'no-mixed-spaces-and-tabs' : [ 'error', 'smart-tabs' ],
 		'object-property-newline'  : [ 'error', { allowMultiplePropertiesPerLine : true } ],
 		'func-style'               : [ 'error', 'declaration', { allowArrowFunctions : true } ],
+		'max-len'                  : ["warn", { "code": 150 } ],
 
 		// automatically fixable
 		'no-unsafe-negation'    : [ 'error' ],
@@ -114,6 +115,7 @@ module.exports = {
 		'no-return-await'         : [ 'error' ],
 		'no-return-assign'        : [ 'error', 'always' ],
 		'object-shorthand'        : [ 'error', 'properties' ],
+		'padded-blocks'           : [ "error", { "blocks" : "never", "classes": "always" }],
 
 		// typescript specific rules
 		'@typescript-eslint/adjacent-overload-signatures'  : 'error',
