@@ -143,10 +143,13 @@ module.exports = {
 		'@typescript-eslint/no-use-before-define'          : [ 'off', { functions : false } ],		// off because it keeps flagging too many false positives
 		'@typescript-eslint/no-var-requires'               : 'error',
 		'@typescript-eslint/consistent-type-definitions'   : [ 'error', 'interface' ],
+		'@typescript-eslint/consistent-type-imports'       : [ 'error', { prefer: 'type-imports' } ],
 		'@typescript-eslint/prefer-namespace-keyword'      : 'error',
 		'@typescript-eslint/type-annotation-spacing'       : 'error',
 		'@typescript-eslint/ban-ts-comment'                : [ 'error', { 'ts-ignore' : 'allow-with-description' } ],		// allow @ts-ignore since it's useful sometimes
 		'@typescript-eslint/no-floating-promises'          : [ 'error', { ignoreVoid : true, ignoreIIFE: true } ],
+		"no-extra-parens"                                  : "off",
+		"@typescript-eslint/no-extra-parens"               : [ "error" ],
 		'@typescript-eslint/naming-convention' : [ "error",
 			{
 				selector           : 'enumMember',
