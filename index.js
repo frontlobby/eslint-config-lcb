@@ -72,11 +72,7 @@ module.exports = {
 		'curly'                 : [ 'error' ],
 		'eol-last'              : [ 'error', 'always' ],
 		'func-call-spacing'     : [ 'error' ],
-		'key-spacing'           : [ 'error', {
-			beforeColon : true,
-			afterColon  : true,
-			align       : 'colon',
-		} ],
+		'key-spacing'           : [ 'error', { beforeColon : true, afterColon : true, align : 'colon' } ],
 		'keyword-spacing'               : [ 'error' ],
 		'linebreak-style'               : [ 'error', 'unix' ],
 		'new-parens'                    : [ 'error' ],
@@ -92,11 +88,7 @@ module.exports = {
 		'computed-property-spacing'     : [ 'error', 'never' ],
 		'semi-spacing'                  : [ 'error' ],
 		'space-before-blocks'           : [ 'error' ],
-		'space-before-function-paren'   : [ 'error', {
-			anonymous  : 'never',
-			named      : 'never',
-			asyncArrow : 'always',
-		} ],
+		'space-before-function-paren'   : [ 'error', { anonymous : 'never', named : 'never', asyncArrow : 'always' } ],
 		'space-in-parens'         : [ 'error', 'never' ],
 		'space-infix-ops'         : [ 'error' ],
 		'space-unary-ops'         : [ 'error', { words : true, nonwords : false } ],
@@ -125,7 +117,16 @@ module.exports = {
 		'@typescript-eslint/explicit-member-accessibility' : 'off',
 		'@typescript-eslint/explicit-module-boundary-types' : 'off',
 		'indent'                                           : 'off',
-		'@typescript-eslint/indent'                        : [ 'error', 'tab', { SwitchCase : 1, ImportDeclaration : 'first' } ],
+		'@typescript-eslint/indent'                        : [ 'error', 'tab', {
+			SwitchCase : 1,
+			ImportDeclaration : 'first',
+			ignoredNodes : [
+				// ignore properties with decorators
+				'FunctionExpression > .params[decorators.length > 0]',
+				'FunctionExpression > .params > :matches(Decorator, :not(:first-child))',
+				'ClassBody.body > PropertyDefinition[decorators.length > 0] > .key',
+			],
+		} ],
 		'@typescript-eslint/member-delimiter-style'        : 'error',
 		'no-array-constructor'                             : 'off',
 		'@typescript-eslint/no-array-constructor'          : 'error',
@@ -149,6 +150,11 @@ module.exports = {
 		'@typescript-eslint/no-floating-promises'          : [ 'error', { ignoreVoid : true, ignoreIIFE: true } ],
 		'@typescript-eslint/naming-convention' : [ "error",
 			{
+				// ignore formatting for properties that require quotes (eg: 'foo.bar')
+				selector           : [ 'objectLiteralProperty', 'objectLiteralMethod', 'typeProperty', 'enumMember' ],
+				format             : null,
+				modifiers          : [ 'requiresQuotes' ]
+			}, {
 				selector           : 'enumMember',
 				format             : [ 'camelCase', 'PascalCase' ],
 			}, {
@@ -182,12 +188,12 @@ module.exports = {
 
 		// vue specific rules
 		'vue/html-indent'                      : [ 'error', 'tab' ],
-		'vue/array-bracket-spacing'            : [ 'error', 'always', { objectsInArrays: true, arraysInArrays      : true } ],
+		'vue/array-bracket-spacing'            : [ 'error', 'always', { objectsInArrays: true, arraysInArrays : true } ],
 		'vue/arrow-spacing'                    : [ 'error' ],
 		'vue/block-spacing'                    : [ 'error' ],
 		'vue/brace-style'                      : [ 'error', 'stroustrup' ],
 		'vue/camelcase'                        : [ 'error' ],
-		'vue/comma-dangle'                     : [ 'error', { objects                  : 'always-multiline', arrays: 'always-multiline', functions: 'never' } ],
+		'vue/comma-dangle'                     : [ 'error', { objects : 'always-multiline', arrays: 'always-multiline', functions: 'never' } ],
 		'vue/component-definition-name-casing' : [ 'error', 'kebab-case' ],
 		'vue/dot-location'                     : [ 'error', 'property' ],
 		'vue/key-spacing'                      : [ 'error', {
@@ -201,6 +207,8 @@ module.exports = {
 		'vue/space-infix-ops'         : [ 'error' ],
 		'vue/space-unary-ops'         : [ 'error', { words : true, nonwords : false } ],
 		'vue/max-attributes-per-line' : [ 'error', { singleline : 3 } ],
+		'vue/no-v-text-v-html-on-component' : 'off',		// we want to allow v-text but not v-html
+		'vue/no-v-html'               : 'warn',
 
 		// custom rules
 		'local-rules/align-assign'  : [ 'error', { maxSpaces : 25 } ],
