@@ -132,11 +132,14 @@ module.exports = {
 		'@typescript-eslint/no-array-constructor'          : 'error',
 		'@typescript-eslint/no-empty-interface'            : 'error',
 		'@typescript-eslint/no-explicit-any'               : 'off',
-		'@typescript-eslint/no-inferrable-types'           : [ 'error', { ignoreProperties : true } ],
+		// the following rule has a bug with types and decorators: https://github.com/typescript-eslint/typescript-eslint/issues/4608
+		// SHOULDDO: check once-in-a-while to see if it's been resolved successfully
+		// '@typescript-eslint/no-inferrable-types'           : [ 'error', { ignoreProperties : true } ],
 		'@typescript-eslint/no-misused-new'                : 'error',
 		'@typescript-eslint/no-namespace'                  : 'error',
 		'@typescript-eslint/no-non-null-assertion'         : 'error',
 		'@typescript-eslint/consistent-type-assertions'    : 'error',
+		'@typescript-eslint/consistent-type-imports'       : [ 'error' ], //{ fixStyle : 'inline-type-imports' } ],
 		'@typescript-eslint/no-parameter-properties'       : 'error',
 		'no-unused-vars'                                   : 'off',
 		'@typescript-eslint/no-unused-vars'                : 'error',

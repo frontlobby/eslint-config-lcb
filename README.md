@@ -6,7 +6,7 @@ Use this into all NodeJS projects as follows:
 	```
 	{
 		"devDependencies" : {
-			"@lcbapp/eslint-config-lcb": "^1.0.0",
+			"@frontlobby/eslint-config-lcb": "^1.0.0",
 		}
 	}
 	```

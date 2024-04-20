@@ -1,11 +1,11 @@
 {
-  "name": "@lcbapp/eslint-config-lcb",
-  "version": "4.0.0",
+  "name": "@frontlobby/eslint-config-lcb",
+  "version": "4.0.1",
   "description": "This holds the base shop standard ESLint configuration file.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lcbapp/eslint-config-lcb.git"
+    "url": "git+https://github.com/frontlobby/eslint-config-lcb.git"
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^5.42.1",
