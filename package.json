@@ -1,6 +1,6 @@
 {
   "name": "@frontlobby/eslint-config-lcb",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "This holds the base shop standard ESLint configuration file.",
   "license": "MIT",
   "repository": {
@@ -12,6 +12,7 @@
     "@typescript-eslint/parser": "^5.42.1",
     "eslint-plugin-local-rules": "^1.3.2",
     "eslint-plugin-vue": "^9.7.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "lodash": "^4.17.21",
     "requireindex": "^1.2.0",
     "typescript": "^4.8.4"

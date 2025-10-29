@@ -18,6 +18,7 @@ module.exports = {
 	plugins : [
 		'@typescript-eslint',
 		'eslint-plugin-local-rules',
+		'simple-import-sort',
 	],
 
 	rules : {
@@ -54,25 +55,25 @@ module.exports = {
 		'no-mixed-spaces-and-tabs' : [ 'error', 'smart-tabs' ],
 		'object-property-newline'  : [ 'error', { allowMultiplePropertiesPerLine : true } ],
 		'func-style'               : [ 'error', 'declaration', { allowArrowFunctions : true } ],
-		'max-len'                  : ["warn", { "code": 150 } ],
+		'max-len'                  : [ 'warn', { 'code': 150 } ],
 
 		// automatically fixable
-		'no-unsafe-negation'    : [ 'error' ],
-		'dot-location'          : [ 'error', 'property' ],
-		'dot-notation'          : [ 'error', { allowPattern : '^[A-Za-z]+(_[A-Za-z0-9]+)+$' } ],
-		'no-extra-bind'         : [ 'error' ],
-		'no-floating-decimal'   : [ 'error' ],
-		'no-implicit-coercion'  : [ 'error', { allow : [ '!!' ] } ],
-		'yoda'                  : [ 'error' ],
-		'no-undef-init'         : [ 'error' ],
-		'array-bracket-spacing' : [ 'error', 'always', { objectsInArrays : true, arraysInArrays : true } ],
-		'comma-dangle'          : [ 'error', { objects : 'always-multiline', arrays : 'always-multiline', functions : 'never' } ],
-		'comma-spacing'         : [ 'error' ],
-		'comma-style'           : [ 'error' ],
-		'curly'                 : [ 'error' ],
-		'eol-last'              : [ 'error', 'always' ],
-		'func-call-spacing'     : [ 'error' ],
-		'key-spacing'           : [ 'error', { beforeColon : true, afterColon : true, align : 'colon' } ],
+		'no-unsafe-negation'            : [ 'error' ],
+		'dot-location'                  : [ 'error', 'property' ],
+		'dot-notation'                  : [ 'error', { allowPattern : '^[A-Za-z]+(_[A-Za-z0-9]+)+$' } ],
+		'no-extra-bind'                 : [ 'error' ],
+		'no-floating-decimal'           : [ 'error' ],
+		'no-implicit-coercion'          : [ 'error', { allow : [ '!!' ] } ],
+		'yoda'                          : [ 'error' ],
+		'no-undef-init'                 : [ 'error' ],
+		'array-bracket-spacing'         : [ 'error', 'always', { objectsInArrays : true, arraysInArrays : true } ],
+		'comma-dangle'                  : [ 'error', { objects : 'always-multiline', arrays : 'always-multiline', functions : 'never' } ],
+		'comma-spacing'                 : [ 'error' ],
+		'comma-style'                   : [ 'error' ],
+		'curly'                         : [ 'error' ],
+		'eol-last'                      : [ 'error', 'always' ],
+		'func-call-spacing'             : [ 'error' ],
+		'key-spacing'                   : [ 'error', { beforeColon : true, afterColon : true, align : 'colon' } ],
 		'keyword-spacing'               : [ 'error' ],
 		'linebreak-style'               : [ 'error', 'unix' ],
 		'new-parens'                    : [ 'error' ],
@@ -89,25 +90,41 @@ module.exports = {
 		'semi-spacing'                  : [ 'error' ],
 		'space-before-blocks'           : [ 'error' ],
 		'space-before-function-paren'   : [ 'error', { anonymous : 'never', named : 'never', asyncArrow : 'always' } ],
-		'space-in-parens'         : [ 'error', 'never' ],
-		'space-infix-ops'         : [ 'error' ],
-		'space-unary-ops'         : [ 'error', { words : true, nonwords : false } ],
-		'spaced-comment'          : [ 'error', 'always', { markers : [ '/' ] } ],
-		'arrow-parens'            : [ 'error', 'as-needed' ],
-		'arrow-spacing'           : [ 'error' ],
-		'generator-star-spacing'  : [ 'error', 'neither' ],
-		'no-useless-rename'       : [ 'error' ],
-		'no-var'                  : [ 'error' ],
-		'prefer-const'            : [ 'error' ],
-		'prefer-numeric-literals' : [ 'error' ],
-		'prefer-template'         : [ 'error' ],
-		'prefer-spread'           : [ 'error' ],
-		'template-curly-spacing'  : [ 'error' ],
-		'yield-star-spacing'      : [ 'error' ],
-		'no-return-await'         : [ 'error' ],
-		'no-return-assign'        : [ 'error', 'always' ],
-		'object-shorthand'        : [ 'error', 'properties' ],
-		'padded-blocks'           : [ "error", { "blocks" : "never", "classes": "always" }],
+		'space-in-parens'               : [ 'error', 'never' ],
+		'space-infix-ops'               : [ 'error' ],
+		'space-unary-ops'               : [ 'error', { words : true, nonwords : false } ],
+		'spaced-comment'                : [ 'error', 'always', { markers : [ '/' ] } ],
+		'capitalized-comments' : [ 'error', 'always', {
+			ignoreConsecutiveComments : true,
+			ignoreInlineComments      : true  // Ignore /* comment */ style to preserve webpack magic comments
+		}],
+		'arrow-parens'                  : [ 'error', 'as-needed' ],
+		'arrow-spacing'                 : [ 'error' ],
+		'generator-star-spacing'        : [ 'error', 'neither' ],
+		'no-useless-rename'             : [ 'error' ],
+		'no-var'                        : [ 'error' ],
+		'prefer-const'                  : [ 'error' ],
+		'prefer-numeric-literals'       : [ 'error' ],
+		'prefer-regex-literals'         : [ 'error', { disallowRedundantWrapping : true } ],
+		'prefer-template'               : [ 'error' ],
+		'prefer-spread'                 : [ 'error' ],
+		'template-curly-spacing'        : [ 'error' ],
+		'yield-star-spacing'            : [ 'error' ],
+		'no-return-await'               : [ 'error' ],
+		'no-return-assign'              : [ 'error', 'always' ],
+		'object-shorthand'              : [ 'error', 'always' ],
+		'padded-blocks'                 : [ 'error', { 'blocks' : 'never', 'classes': 'always' }],
+		'simple-import-sort/imports'    : [ 'error', {
+			groups : [
+				['^\\u0000'],           // Side effect imports (CSS, polyfills, etc.)
+				['^node:'],             // Node.js built-ins
+				['^@?\\w'],             // External packages
+				['^\\$\\/lib\\/'],      // Your lib files
+				['^\\$\\/entities\\/'], // Your entities
+				['^\\$\\/'],            // Other internal files
+				['^\\.']                // Relative imports
+			]
+		}],
 
 		// typescript specific rules
 		'@typescript-eslint/adjacent-overload-signatures'  : 'error',
@@ -115,7 +132,7 @@ module.exports = {
 		'@typescript-eslint/ban-types'                     : 'warn',
 		'@typescript-eslint/explicit-function-return-type' : 'off',
 		'@typescript-eslint/explicit-member-accessibility' : 'off',
-		'@typescript-eslint/explicit-module-boundary-types' : 'off',
+		'@typescript-eslint/explicit-module-boundary-types': 'off',
 		'indent'                                           : 'off',
 		'@typescript-eslint/indent'                        : [ 'error', 'tab', {
 			SwitchCase : 1,
@@ -127,31 +144,32 @@ module.exports = {
 				'ClassBody.body > PropertyDefinition[decorators.length > 0] > .key',
 			],
 		} ],
-		'@typescript-eslint/member-delimiter-style'        : 'error',
-		'no-array-constructor'                             : 'off',
-		'@typescript-eslint/no-array-constructor'          : 'error',
-		'@typescript-eslint/no-empty-interface'            : 'error',
-		'@typescript-eslint/no-explicit-any'               : 'off',
 		// the following rule has a bug with types and decorators: https://github.com/typescript-eslint/typescript-eslint/issues/4608
 		// SHOULDDO: check once-in-a-while to see if it's been resolved successfully
-		// '@typescript-eslint/no-inferrable-types'           : [ 'error', { ignoreProperties : true } ],
-		'@typescript-eslint/no-misused-new'                : 'error',
-		'@typescript-eslint/no-namespace'                  : 'error',
-		'@typescript-eslint/no-non-null-assertion'         : 'error',
-		'@typescript-eslint/consistent-type-assertions'    : 'error',
-		'@typescript-eslint/consistent-type-imports'       : [ 'error' ], //{ fixStyle : 'inline-type-imports' } ],
-		'@typescript-eslint/no-parameter-properties'       : 'error',
-		'no-unused-vars'                                   : 'off',
-		'@typescript-eslint/no-unused-vars'                : 'error',
-		'no-use-before-define'                             : 'off',
-		'@typescript-eslint/no-use-before-define'          : [ 'off', { functions : false } ],		// off because it keeps flagging too many false positives
-		'@typescript-eslint/no-var-requires'               : 'error',
-		'@typescript-eslint/consistent-type-definitions'   : [ 'error', 'interface' ],
-		'@typescript-eslint/prefer-namespace-keyword'      : 'error',
-		'@typescript-eslint/type-annotation-spacing'       : 'error',
-		'@typescript-eslint/ban-ts-comment'                : [ 'error', { 'ts-ignore' : 'allow-with-description' } ],		// allow @ts-ignore since it's useful sometimes
-		'@typescript-eslint/no-floating-promises'          : [ 'error', { ignoreVoid : true, ignoreIIFE: true } ],
-		'@typescript-eslint/naming-convention' : [ "error",
+		// '@typescript-eslint/no-inferrable-types'     : [ 'error', { ignoreProperties : true } ],
+		'@typescript-eslint/member-delimiter-style'     : 'error',
+		'no-array-constructor'                          : 'off',
+		'@typescript-eslint/no-array-constructor'       : 'error',
+		'@typescript-eslint/no-empty-interface'         : 'error',
+		'@typescript-eslint/no-explicit-any'            : 'off',
+		'@typescript-eslint/no-misused-new'             : 'error',
+		'@typescript-eslint/no-namespace'               : 'error',
+		'@typescript-eslint/no-non-null-assertion'      : 'error',
+		'@typescript-eslint/consistent-type-assertions' : 'error',
+		'@typescript-eslint/consistent-type-imports'    : [ 'error' ], //{ fixStyle: 'inline-type-imports' } ],
+		'@typescript-eslint/no-parameter-properties'    : 'error',
+		'no-unused-vars'                                : 'off',	// overridden by the next rule
+		'@typescript-eslint/no-unused-vars'             : 'error',
+		'no-use-before-define'                          : 'off',	// overridden by the next rule
+		'@typescript-eslint/no-use-before-define'       : [ 'off', { functions     : false } ],		// off because it keeps flagging too many false positives
+		'@typescript-eslint/no-var-requires'            : 'error',
+		'@typescript-eslint/consistent-type-definitions': [ 'error', 'interface' ],
+		'@typescript-eslint/prefer-namespace-keyword'   : 'error',
+		'@typescript-eslint/type-annotation-spacing'    : 'error',
+		'@typescript-eslint/ban-ts-comment'             : [ 'error', { 'ts-ignore' : 'allow-with-description' } ],		// allow @ts-ignore since it's useful sometimes
+		'@typescript-eslint/no-floating-promises'       : [ 'error', { ignoreVoid  : true, ignoreIIFE: true } ],
+		'@typescript-eslint/array-type'                 : [ 'error', { default     : 'array' } ],
+		'@typescript-eslint/naming-convention'          : [ "error",
 			{
 				// ignore formatting for properties that require quotes (eg: 'foo.bar')
 				selector           : [ 'objectLiteralProperty', 'objectLiteralMethod', 'typeProperty', 'enumMember' ],
