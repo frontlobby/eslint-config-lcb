@@ -112,7 +112,7 @@ module.exports = {
 		'yield-star-spacing'            : [ 'error' ],
 		'no-return-await'               : [ 'error' ],
 		'no-return-assign'              : [ 'error', 'always' ],
-		'object-shorthand'              : [ 'error', 'always' ],
+		'object-shorthand'              : [ 'error', 'properties' ],
 		'padded-blocks'                 : [ 'error', { 'blocks' : 'never', 'classes': 'always' }],
 		'simple-import-sort/imports'    : [ 'error', {
 			groups : [
@@ -146,7 +146,7 @@ module.exports = {
 		} ],
 		// the following rule has a bug with types and decorators: https://github.com/typescript-eslint/typescript-eslint/issues/4608
 		// SHOULDDO: check once-in-a-while to see if it's been resolved successfully
-		// '@typescript-eslint/no-inferrable-types'     : [ 'error', { ignoreProperties : true } ],
+		'@typescript-eslint/no-inferrable-types'        : [ 'error', { ignoreProperties : true } ],
 		'@typescript-eslint/member-delimiter-style'     : 'error',
 		'no-array-constructor'                          : 'off',
 		'@typescript-eslint/no-array-constructor'       : 'error',

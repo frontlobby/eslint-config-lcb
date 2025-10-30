@@ -1,6 +1,6 @@
 {
   "name": "@frontlobby/eslint-config-lcb",
-  "version": "6.0.1",
+  "version": "6.0.2",
   "description": "This holds the base shop standard ESLint configuration file.",
   "license": "MIT",
   "repository": {
