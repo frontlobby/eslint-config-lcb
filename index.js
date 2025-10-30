@@ -156,7 +156,7 @@ module.exports = {
 		'@typescript-eslint/no-namespace'               : 'error',
 		'@typescript-eslint/no-non-null-assertion'      : 'error',
 		'@typescript-eslint/consistent-type-assertions' : 'error',
-		'@typescript-eslint/consistent-type-imports'    : [ 'error' ], //{ fixStyle: 'inline-type-imports' } ],
+		'@typescript-eslint/consistent-type-imports'    : 'off', // { fixStyle: 'inline-type-imports' } ],
 		'@typescript-eslint/no-parameter-properties'    : 'error',
 		'no-unused-vars'                                : 'off',	// overridden by the next rule
 		'@typescript-eslint/no-unused-vars'             : 'error',
