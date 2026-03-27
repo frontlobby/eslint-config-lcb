@@ -1,20 +1,24 @@
 /**
  * @fileoverview Align assignment statements on their equals signs
  */
-'use strict';
+import eslint from 'eslint';
 
-// ------------------------------------------------------------------------------
-// Requirements
-// ------------------------------------------------------------------------------
+import rule from '../../../lib/rules/align-assign.mjs';
 
-const RuleTester = require('eslint').RuleTester;
-const rule       = require('../../../lib/rules/align-assign');
+const { RuleTester } = eslint;
 
 // ------------------------------------------------------------------------------
 // Tests
 // ------------------------------------------------------------------------------
 
-const ruleTester = new RuleTester();
+const ruleTester = new RuleTester({
+	languageOptions : {
+		ecmaVersion : 2022,
+		sourceType  : 'script',
+	},
+});
+const createAlignmentErrors = count => Array.from({ length : count }, () => ({ message : 'Assignments should be aligned' }));
+
 ruleTester.run('align-assign', rule, {
 	valid : [
 		`
@@ -131,7 +135,7 @@ ruleTester.run('align-assign', rule, {
 			var b = 3;
 			var asdf = 4;
 			b = 4;`,
-			errors : [ {}, {}, {} ],
+			errors : createAlignmentErrors(3),
 			output : `
 			var a    = 1;
 			var b    = 3;
@@ -144,7 +148,7 @@ ruleTester.run('align-assign', rule, {
 			var b     = 3;
 			var asdf  = 4;
 			b         = 4;`,
-			errors : [ {}, {}, {}, {} ],
+			errors : createAlignmentErrors(4),
 			output : `
 			var a    = 1;
 			var b    = 3;
@@ -156,7 +160,7 @@ ruleTester.run('align-assign', rule, {
 			var a = 1;
 
 			a     = 2;`,
-			errors : [ {} ],
+			errors : createAlignmentErrors(1),
 			output : `
 			var a = 1;
 
@@ -166,7 +170,7 @@ ruleTester.run('align-assign', rule, {
 			code : `
 			a.b.c.d = 4;
 			a.b = 3;`,
-			errors : [ {} ],
+			errors : createAlignmentErrors(1),
 			output : `
 			a.b.c.d = 4;
 			a.b     = 3;`,
@@ -177,7 +181,7 @@ ruleTester.run('align-assign', rule, {
 				var a = 1;
 				a = 2;
 			}`,
-			errors : [ {} ],
+			errors : createAlignmentErrors(1),
 			output : `
 			function f() {
 				var a = 1;
@@ -189,7 +193,7 @@ ruleTester.run('align-assign', rule, {
 			{ var a = 1;
 				a     = 2;
 			}`,
-			errors : [ {} ],
+			errors : createAlignmentErrors(1),
 			output : `
 			{ var a = 1;
 				a = 2;
@@ -199,7 +203,7 @@ ruleTester.run('align-assign', rule, {
 			code : `
 			var a, b, c = 3, d;
 			var f = 5;`,
-			errors : [ {} ],
+			errors : createAlignmentErrors(1),
 			output : `
 			var a, b, c = 3, d;
 			var f       = 5;`,
@@ -208,7 +212,7 @@ ruleTester.run('align-assign', rule, {
 			code : `
 			thisVariableHas27Characters += 2;
 			b                            = 3;`,
-			errors : [ {} ],
+			errors : createAlignmentErrors(1),
 			output : `
 			thisVariableHas27Characters += 2;
 			b = 3;`,
@@ -217,7 +221,7 @@ ruleTester.run('align-assign', rule, {
 			code : `
 			var a = 2;
 			b    += 3;`,
-			errors : [ {}, {} ],
+			errors : createAlignmentErrors(2),
 			output : `
 			var a  = 2;
 			b     += 3;`,
