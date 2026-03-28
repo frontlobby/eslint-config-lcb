@@ -248,7 +248,7 @@ const {
 const config = [
 	js.configs.recommended,
 	...tsPlugin.configs['flat/recommended'],
-	...vuePlugin.configs['flat/recommended'],
+	...vuePlugin.configs['flat/vue2-recommended'],
 	{
 		name : '@frontlobby/eslint-config-lcb',
 		languageOptions : {
