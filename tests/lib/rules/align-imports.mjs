@@ -174,7 +174,7 @@ ruleTester.run('align-imports', rule, trimCodeWhitespace({
 			errors  : [ { message : 'Unaligned import statement' }, { message : 'Unaligned import statement' } ],
 		}),
 
-		namedCase('collapses extra spaces across a wide named import group', {
+		namedCase('scenario 1', {
 			code    : `
 				import { Country, CountryLabels, CountryRegions, getRegionLabel } from '$/lib/Address';
 				import { copyToClipboard, formSelectOptions, waitFor } from '$/lib/utils';
@@ -189,8 +189,29 @@ ruleTester.run('align-imports', rule, trimCodeWhitespace({
 				import Markdown from '$/lib/widgets/Markdown.vue';
 				import Toast    from '$/lib/widgets/Toast.vue';
 			`,
-			options : [ { maxSpaces : 60, collapseExtraSpaces : true } ],
+			options : [ { maxSpaces : 30, collapseExtraSpaces : true } ],
 			errors  : [ { message : 'Unaligned import statement' }, { message : 'Unaligned import statement' } ],
+		}),
+
+		namedCase('scenario 2', {
+			code    : `
+				import random from '$/lib/Random';
+				import { Component, Prop, Ref, Vue, Watch } from '$/lib/vueExt';
+				import Form         from '$/lib/widgets/form/Form.vue';
+				import FormCurrency from '$/lib/widgets/form/FormCurrency.vue';
+				import Step         from '$/lib/widgets/Steps/Step.vue';
+				import Toast        from '$/lib/widgets/Toast.vue';
+			`,
+			output  : `
+				import random       from '$/lib/Random';
+				import { Component, Prop, Ref, Vue, Watch } from '$/lib/vueExt';
+				import Form         from '$/lib/widgets/form/Form.vue';
+				import FormCurrency from '$/lib/widgets/form/FormCurrency.vue';
+				import Step         from '$/lib/widgets/Steps/Step.vue';
+				import Toast        from '$/lib/widgets/Toast.vue';
+			`,
+			options : [ { maxSpaces : 30, collapseExtraSpaces : true } ],
+			errors  : [ { message : 'Unaligned import statement' } ],
 		}),
 	],
 }));
