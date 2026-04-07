@@ -235,20 +235,22 @@ const rules = {
 	'vue/no-v-html'                        : 'warn',
 
 	// custom rules
-	'local-rules/align-assign'  : [ 'error', { maxSpaces : 25 } ],
-	'local-rules/align-imports' : [ 'error', { maxSpaces : 30, collapseExtraSpaces : true } ],
+	'local-rules/align-assign'                           : [ 'error', { maxSpaces : 25 } ],
+	'local-rules/align-imports'                          : [ 'error', { maxSpaces : 30, collapseExtraSpaces : true } ],
+	'local-rules/vue-facing-decorator-prop-requirements' : 'error',
 };
 
 const {
-	'local-rules/align-assign'  : alignAssignRule,
-	'local-rules/align-imports' : alignImportsRule,
+	'local-rules/align-assign'                           : alignAssignRule,
+	'local-rules/align-imports'                          : alignImportsRule,
+	'local-rules/vue-facing-decorator-prop-requirements' : vueFacingDecoratorPropRequirementsRule,
 	...sharedRules
 } = rules;
 
 const config = [
 	js.configs.recommended,
 	...tsPlugin.configs['flat/recommended'],
-	...vuePlugin.configs['flat/recommended'],
+	...vuePlugin.configs['flat/vue2-recommended'],
 	{
 		name : '@frontlobby/eslint-config-lcb',
 		languageOptions : {
@@ -270,8 +272,9 @@ const config = [
 		},
 		rules : {
 			...sharedRules,
-			'local-rules/align-assign'  : alignAssignRule,
-			'local-rules/align-imports' : alignImportsRule,
+			'local-rules/align-assign'                           : alignAssignRule,
+			'local-rules/align-imports'                          : alignImportsRule,
+			'local-rules/vue-facing-decorator-prop-requirements' : vueFacingDecoratorPropRequirementsRule,
 		},
 	},
 ];
