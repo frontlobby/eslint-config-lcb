@@ -1,9 +1,3 @@
-/**
- * @fileoverview Require from keywords to be aligned
- * @author Maël Nison
- * @copyright 2016 Maël Nison. All rights reserved.
- * See LICENSE file in root directory for full license.
- */
 import { RuleTester } from 'eslint';
 
 import rule from '../../../lib/rules/align-imports.mjs';
@@ -213,6 +207,23 @@ ruleTester.run('align-imports', rule, trimCodeWhitespace({
 			options : [ { maxSpaces : 30, collapseExtraSpaces : true } ],
 			errors  : [ { message : 'Unaligned import statement' } ],
 		}),
+
+		namedCase('scenario 3', {
+			code    : `
+				import Axios                                   from 'axios';
+
+				import { Answers, Questionnaire, Result } from '$/lib/equifax/KountClient';
+				import { Entity }                         from '$/lib/typeormExt';
+			`,
+			output    : `
+				import Axios from 'axios';
+
+				import { Answers, Questionnaire, Result } from '$/lib/equifax/KountClient';
+				import { Entity }                         from '$/lib/typeormExt';
+			`,
+			options : [ { maxSpaces : 30, collapseExtraSpaces : true } ],
+			errors  : [ { message : 'Unaligned import statement' } ],
+		})
 	],
 }));
 

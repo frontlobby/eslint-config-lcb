@@ -19,3 +19,20 @@ Use this in Node.js projects as follows:
 		...lcbConfig,
 	];
 	```
+
+# Running Tests
+
+- a specific rule
+	```sh
+	npx mocha tests/lib/rules/vue-facing-decorator-prop-requirements.mjs
+	```
+
+- all tests
+	```sh
+	npx mocha "tests/**/*.mjs"
+	```
+
+- If dependencies are not installed yet, run:
+	```sh
+	npm install
+	```
