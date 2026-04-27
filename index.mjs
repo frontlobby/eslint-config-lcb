@@ -68,6 +68,7 @@ const rules = {
 	'key-spacing'                   : [ 'error', { beforeColon : true, afterColon : true, align : 'colon' } ],
 	'keyword-spacing'               : [ 'error' ],
 	'linebreak-style'               : [ 'error', 'unix' ],
+	"logical-assignment-operators"  : [ 'error', 'always'],
 	'new-parens'                    : [ 'error' ],
 	'no-lonely-if'                  : [ 'error' ],
 	'no-multiple-empty-lines'       : [ 'error', { max : 2, maxEOF : 1, maxBOF : 0 } ],
