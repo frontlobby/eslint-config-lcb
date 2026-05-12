@@ -237,12 +237,14 @@ const rules = {
 
 	// custom rules
 	'local-rules/align-assign'                           : [ 'error', { maxSpaces : 25 } ],
+	'local-rules/align-enum-values'                      : 'error',
 	'local-rules/align-imports'                          : [ 'error', { maxSpaces : 30, collapseExtraSpaces : true } ],
 	'local-rules/vue-facing-decorator-prop-requirements' : 'error',
 };
 
 const {
 	'local-rules/align-assign'                           : alignAssignRule,
+	'local-rules/align-enum-values'                      : alignEnumValuesRule,
 	'local-rules/align-imports'                          : alignImportsRule,
 	'local-rules/vue-facing-decorator-prop-requirements' : vueFacingDecoratorPropRequirementsRule,
 	...sharedRules
@@ -274,6 +276,7 @@ const config = [
 		rules : {
 			...sharedRules,
 			'local-rules/align-assign'                           : alignAssignRule,
+			'local-rules/align-enum-values'                      : alignEnumValuesRule,
 			'local-rules/align-imports'                          : alignImportsRule,
 			'local-rules/vue-facing-decorator-prop-requirements' : vueFacingDecoratorPropRequirementsRule,
 		},
