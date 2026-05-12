@@ -66,11 +66,11 @@ ruleTester.run('align-enum-values', rule, {
 			}
 		`),
 
-		namedCase('accepts aligned members when values are separated by comment lines', `
+		namedCase('treats comment-separated members as independent blocks', `
 			enum Status {
-				Ok      = 'ok',
+				Ok = 'ok',
 				// wait states
-				// (comments do not reset alignment)
+				// (comments reset alignment)
 				Pending = 'pending',
 			}
 		`),
@@ -82,6 +82,27 @@ ruleTester.run('align-enum-values', rule, {
 		namedCase('accepts single-line enum when braces wrap to other lines but members share one line', `
 			enum Status {
 				Ok = 'ok', Pending = 'pending',
+			}
+		`),
+
+		namedCase('accepts independent alignment per block when blocks are separated by a blank line', `
+			enum Status {
+				Ok      = 'ok',
+				Pending = 'pending',
+
+				InternalError = 'ie',
+				X             = 'x',
+			}
+		`),
+
+		namedCase('accepts independent alignment per block when comments follow the separating blank line', `
+			enum Status {
+				Ok      = 'ok',
+				Pending = 'pending',
+
+				// internal states
+				InternalError = 'ie',
+				X             = 'x',
 			}
 		`),
 	],
@@ -153,24 +174,74 @@ ruleTester.run('align-enum-values', rule, {
 			errors : createAlignmentErrors(1),
 		}),
 
-		namedCase('aligns members across comment lines as one block', {
+		namedCase('does not align across comment-separated blocks', {
 			code : `
 				enum Status {
-					Ok = 'ok',
-					// wait states
-					// (alignment column ignores these lines)
+					Ok      = 'ok',
 					Pending = 'pending',
+					// wait states
+					// (alignment resets after these lines)
+					InternalError = 'ie',
+					X = 'x',
 				}
 			`,
 			output : `
 				enum Status {
 					Ok      = 'ok',
-					// wait states
-					// (alignment column ignores these lines)
 					Pending = 'pending',
+					// wait states
+					// (alignment resets after these lines)
+					InternalError = 'ie',
+					X             = 'x',
 				}
 			`,
 			errors : createAlignmentErrors(1),
+		}),
+
+		namedCase('aligns each block separately when a blank line separates member groups', {
+			code : `
+				enum Status {
+					Ok = 'ok',
+					Pending = 'pending',
+
+					InternalError = 'ie',
+					X = 'x',
+				}
+			`,
+			output : `
+				enum Status {
+					Ok      = 'ok',
+					Pending = 'pending',
+
+					InternalError = 'ie',
+					X             = 'x',
+				}
+			`,
+			errors : createAlignmentErrors(2),
+		}),
+
+		namedCase('aligns each block separately when comments follow a separating blank line', {
+			code : `
+				enum Status {
+					Ok = 'ok',
+					Pending = 'pending',
+
+					// internal states
+					InternalError = 'ie',
+					X = 'x',
+				}
+			`,
+			output : `
+				enum Status {
+					Ok      = 'ok',
+					Pending = 'pending',
+
+					// internal states
+					InternalError = 'ie',
+					X             = 'x',
+				}
+			`,
+			errors : createAlignmentErrors(2),
 		}),
 
 		namedCase('single-line enum: fixes missing spaces around equals', {
@@ -224,4 +295,3 @@ function createSpacingErrors(count) {
 		message : 'Use a single space on each side of \'=\' in a single-line enum',
 	}));
 }
-
