@@ -239,6 +239,7 @@ const rules = {
 	'local-rules/align-assign'                           : [ 'error', { maxSpaces : 25 } ],
 	'local-rules/align-enum-values'                      : 'error',
 	'local-rules/align-imports'                          : [ 'error', { maxSpaces : 30, collapseExtraSpaces : true } ],
+	'local-rules/single-line-json-object'                : [ 'error', { maxLength : 130 } ],
 	'local-rules/vue-facing-decorator-prop-requirements' : 'error',
 };
 
@@ -246,6 +247,7 @@ const {
 	'local-rules/align-assign'                           : alignAssignRule,
 	'local-rules/align-enum-values'                      : alignEnumValuesRule,
 	'local-rules/align-imports'                          : alignImportsRule,
+	'local-rules/single-line-json-object'                : singleLineJsonObjectRule,
 	'local-rules/vue-facing-decorator-prop-requirements' : vueFacingDecoratorPropRequirementsRule,
 	...sharedRules
 } = rules;
@@ -278,6 +280,7 @@ const config = [
 			'local-rules/align-assign'                           : alignAssignRule,
 			'local-rules/align-enum-values'                      : alignEnumValuesRule,
 			'local-rules/align-imports'                          : alignImportsRule,
+			'local-rules/single-line-json-object'                : singleLineJsonObjectRule,
 			'local-rules/vue-facing-decorator-prop-requirements' : vueFacingDecoratorPropRequirementsRule,
 		},
 	},
