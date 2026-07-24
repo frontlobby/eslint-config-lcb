@@ -1,6 +1,13 @@
 This holds the base LCB shop standard ESLint configuration file.
 
-Requires **Node.js >= 22.18** (native TypeScript type stripping for custom rules).
+Custom rules are authored in TypeScript (`.mts`) under `lib/` but consumed as plain, pre-built
+`.mjs` under `dist/` (committed to the repo) — Node refuses to strip TypeScript types for files
+inside `node_modules`, and installing this package via its GitHub shorthand (`github:...`) fetches
+a tarball that skips the `prepare` lifecycle script, so `dist/` can't be rebuilt reliably at
+install time. Run `npm run build` after changing anything under `lib/` and commit the result.
+
+Developing/testing the `.mts` source directly (not the committed `dist/` output) requires
+**Node.js >= 22.18** for native TypeScript type stripping.
 
 Use this in Node.js projects as follows:
 
@@ -21,6 +28,19 @@ Use this in Node.js projects as follows:
 		...config,
 	];
 	```
+
+# Building
+
+```sh
+npm run build
+```
+
+Compiles `lib/**/*.mts` + `eslintLocalRules.mts` to `dist/`. Required after any change under
+`lib/` — `baseRules.mjs` imports the local rules from `dist/eslintLocalRules.mjs`, not the
+TypeScript source directly. `npm run lint` runs this automatically; `npm run prepare` (which
+also runs it) only helps for consumers that install over a real `git clone`, not the GitHub
+tarball shorthand this package is normally consumed through — commit `dist/` before tagging a
+release.
 
 # Running Tests
 
