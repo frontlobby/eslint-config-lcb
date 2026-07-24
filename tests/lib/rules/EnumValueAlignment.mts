@@ -4,8 +4,8 @@
 import parser from '@typescript-eslint/parser';
 import { RuleTester } from 'eslint';
 
-import rule from '../../../lib/rules/align-enum-values.mjs';
-import { namedCase } from '../../../lib/utils.mjs';
+import { EnumValueAlignment } from '../../../lib/rules/EnumValueAlignment.mts';
+import { namedCase } from '../../../lib/utils.mts';
 
 const ruleTester = new RuleTester({
 	languageOptions : {
@@ -15,7 +15,7 @@ const ruleTester = new RuleTester({
 	},
 });
 
-ruleTester.run('align-enum-values', rule, {
+ruleTester.run('align-enum-values', EnumValueAlignment.toEslintRule(), {
 	valid : [
 		namedCase('accepts already aligned enum values', `
 			enum Status {
@@ -286,11 +286,11 @@ ruleTester.run('align-enum-values', rule, {
 	],
 });
 
-function createAlignmentErrors(count) {
+function createAlignmentErrors(count: number) {
 	return Array.from({ length : count }, () => ({ message : 'Enum values should be aligned' }));
 }
 
-function createSpacingErrors(count) {
+function createSpacingErrors(count: number) {
 	return Array.from({ length : count }, () => ({
 		message : 'Use a single space on each side of \'=\' in a single-line enum',
 	}));

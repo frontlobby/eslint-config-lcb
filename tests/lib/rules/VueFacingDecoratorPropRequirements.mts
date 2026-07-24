@@ -1,11 +1,12 @@
 /**
  * @fileoverview Require vue-facing-decorator props to declare prop requirements and readonly fields
  */
+import type { RuleTester as RuleTesterTypes } from 'eslint';
 import { RuleTester } from 'eslint';
 import tsParser from '@typescript-eslint/parser';
 
-import rule from '../../../lib/rules/vue-facing-decorator-prop-requirements.mjs';
-import { namedCase } from '../../../lib/utils.mjs';
+import { VueFacingDecoratorPropRequirements } from '../../../lib/rules/VueFacingDecoratorPropRequirements.mts';
+import { namedCase, trimCodeWhitespace } from '../../../lib/utils.mts';
 
 const ruleTester = new RuleTester({
 	languageOptions : {
@@ -18,7 +19,7 @@ const ruleTester = new RuleTester({
 	},
 });
 
-ruleTester.run('vue-facing-decorator-prop-requirements', rule, trimCodeWhitespace({
+ruleTester.run('vue-facing-decorator-prop-requirements', VueFacingDecoratorPropRequirements.toEslintRule(), trimCodeWhitespace({
 	valid : [
 		vueCase('accepts required readonly props in @Component classes', `
 			import { Component, Prop } from 'vue-facing-decorator';
@@ -221,23 +222,36 @@ ruleTester.run('vue-facing-decorator-prop-requirements', rule, trimCodeWhitespac
 	],
 }));
 
-function trimCodeWhitespace(testCases) {
-	if (Array.isArray(testCases)) {
-		return testCases.map(trimCodeWhitespace);
+function vueCase(
+	name: string,
+	testCase: string,
+	options?: Omit<RuleTesterTypes.ValidTestCase, 'name' | 'code'>,
+): RuleTesterTypes.ValidTestCase & { name: string };
+
+function vueCase(
+	name: string,
+	testCase: RuleTesterTypes.InvalidTestCase,
+	options?: Omit<RuleTesterTypes.ValidTestCase, 'name' | 'code'>,
+): RuleTesterTypes.InvalidTestCase & { name: string };
+
+function vueCase(
+	name: string,
+	testCase: RuleTesterTypes.ValidTestCase,
+	options?: Omit<RuleTesterTypes.ValidTestCase, 'name' | 'code'>,
+): RuleTesterTypes.ValidTestCase & { name: string };
+
+function vueCase(
+	name: string,
+	testCase: string | RuleTesterTypes.ValidTestCase | RuleTesterTypes.InvalidTestCase,
+	options: Omit<RuleTesterTypes.ValidTestCase, 'name' | 'code'> = {},
+) {
+	if (typeof testCase === 'string') {
+		return namedCase(name, testCase, { filename : 'test.ts', ...options });
 	}
 
-	if (typeof testCases === 'object' && testCases !== null) {
-		return Object.fromEntries(Object.entries(testCases).map(([ key, value ]) => {
-			if ((key === 'code' || key === 'output') && typeof value === 'string') {
-				return [ key, value.split('\n').map(line => line.replace(/^\s+/, '')).join('\n').trim() ];
-			}
-			return [ key, trimCodeWhitespace(value) ];
-		}));
+	if ('errors' in testCase) {
+		return namedCase(name, testCase, { filename : 'test.ts', ...options });
 	}
 
-	return testCases;
-}
-
-function vueCase(name, testCase, options) {
 	return namedCase(name, testCase, { filename : 'test.ts', ...options });
 }

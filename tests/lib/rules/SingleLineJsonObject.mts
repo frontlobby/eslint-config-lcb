@@ -1,7 +1,7 @@
 import { RuleTester } from 'eslint';
 
-import rule from '../../../lib/rules/single-line-json-object.mjs';
-import { namedCase } from '../../../lib/utils.mjs';
+import { SingleLineJsonObject } from '../../../lib/rules/SingleLineJsonObject.mts';
+import { namedCase } from '../../../lib/utils.mts';
 
 const ruleTester = new RuleTester({
 	languageOptions : {
@@ -10,15 +10,15 @@ const ruleTester = new RuleTester({
 	},
 });
 
-ruleTester.run('single-line-json-object', rule, {
+ruleTester.run('single-line-json-object', SingleLineJsonObject.toEslintRule(), {
 	valid : [
 		namedCase('accepts an object that is already on one line', `
 			const payload = { enabled : true, count : 2 };
 		`),
 
-		namedCase('accepts a single-line object that fits a custom maxLength', `
+		namedCase('accepts a single-line object that fits a custom maxLen', `
 			const payload = { enabled : true, count : 2 };
-		`, { options : [ { maxLength : 50 } ] }),
+		`, { options : [ { maxLen : 50 } ] }),
 
 		namedCase('leaves a multiline object when the resulting statement exceeds the default limit', `
 			const payload = {
@@ -27,12 +27,12 @@ ruleTester.run('single-line-json-object', rule, {
 			};
 		`),
 
-		namedCase('leaves a multiline object when a custom maxLength would be exceeded', `
+		namedCase('leaves a multiline object when a custom maxLen would be exceeded', `
 			const payload = {
 				enabled : true,
 				count : 2,
 			};
-		`, { options : [ { maxLength : 30 } ] }),
+		`, { options : [ { maxLen : 30 } ] }),
 
 		namedCase('ignores objects with comments inside them', `
 			const payload = {
@@ -50,12 +50,24 @@ ruleTester.run('single-line-json-object', rule, {
 			};
 		`),
 
-		namedCase('leaves shorthand properties when a custom maxLength would be exceeded', `
+		namedCase('leaves shorthand properties when a custom maxLen would be exceeded', `
 			const payload = {
 				enabled,
 				firstExtremelyLongPropertyName : 'first fairly long value',
 			};
-		`, { options : [ { maxLength : 40 } ] }),
+		`, { options : [ { maxLen : 40 } ] }),
+
+		namedCase('keeps a multiline object when collapsed line fits maxLen but is inside the unwrap buffer', `
+			const payload = {
+				enabled : true,
+				count : 2,
+			};
+		`, { options : [ { maxLen : 40, maxLenBuffer : 5 } ] }),
+
+		namedCase('keeps a single-line object when line length is within the wrap buffer', {
+			code    : 'const payload = { aaaaaaaaaaaaaaaaaaaaa };',
+			options : [ { maxLen : 40, maxLenBuffer : 5 } ],
+		}),
 	],
 
 	invalid : [
@@ -131,7 +143,7 @@ ruleTester.run('single-line-json-object', rule, {
 			errors : [ { message : 'Object should be on a single line when it fits within the line limit' } ],
 		}),
 
-		namedCase('honors a larger custom maxLength', {
+		namedCase('honors a larger custom maxLen', {
 			code : `
 				const payload = {
 					firstProperty : 'first value',
@@ -141,11 +153,11 @@ ruleTester.run('single-line-json-object', rule, {
 			output : `
 				const payload = { firstProperty : 'first value', secondProperty : 'second value' };
 			`,
-			options : [ { maxLength : 120 } ],
+			options : [ { maxLen : 120 } ],
 			errors  : [ { message : 'Object should be on a single line when it fits within the line limit' } ],
 		}),
 
-		namedCase('includes the leading line content when checking maxLength', {
+		namedCase('includes the leading line content when checking maxLen', {
 			code : `
 				const prefix = 'long enough to matter'; const payload = {
 					ok : true,
@@ -154,11 +166,11 @@ ruleTester.run('single-line-json-object', rule, {
 			output : `
 				const prefix = 'long enough to matter'; const payload = { ok : true };
 			`,
-			options : [ { maxLength : 80 } ],
+			options : [ { maxLen : 80 } ],
 			errors  : [ { message : 'Object should be on a single line when it fits within the line limit' } ],
 		}),
 
-		namedCase('splits a single-line object when it exceeds the custom maxLength', {
+		namedCase('splits a single-line object when it exceeds the custom maxLen', {
 			code : `
 				const payload = { enabled : true, count : 2 };
 			`,
@@ -168,7 +180,14 @@ ruleTester.run('single-line-json-object', rule, {
 					count : 2,
 				};
 			`,
-			options : [ { maxLength : 30 } ],
+			options : [ { maxLen : 30 } ],
+			errors  : [ { message : 'Object should be split over multiple lines when it exceeds the line limit' } ],
+		}),
+
+		namedCase('splits a single-line object when line length exceeds the wrap buffer', {
+			code    : 'const payload = { aaaaaaaaaaaaaaaaaaaaaaaaa };',
+			output  : 'const payload = {\n\taaaaaaaaaaaaaaaaaaaaaaaaa,\n};',
+			options : [ { maxLen : 40, maxLenBuffer : 5 } ],
 			errors  : [ { message : 'Object should be split over multiple lines when it exceeds the line limit' } ],
 		}),
 
@@ -183,7 +202,7 @@ ruleTester.run('single-line-json-object', rule, {
 					count : 2,
 				};
 			`,
-			options : [ { maxLength : 30 } ],
+			options : [ { maxLen : 30 } ],
 			errors  : [ { message : 'Object should be split over multiple lines when it exceeds the line limit' } ],
 		}),
 
@@ -196,8 +215,21 @@ ruleTester.run('single-line-json-object', rule, {
 					ok : true,
 				};
 			`,
-			options : [ { maxLength : 60 } ],
+			options : [ { maxLen : 60 } ],
 			errors  : [ { message : 'Object should be split over multiple lines when it exceeds the line limit' } ],
+		}),
+
+		namedCase('collapses a multiline object when collapsed line is below the unwrap buffer', {
+			code : `
+				const payload = {
+					ok : true,
+				};
+			`,
+			output : `
+				const payload = { ok : true };
+			`,
+			options : [ { maxLen : 40, maxLenBuffer : 5 } ],
+			errors  : [ { message : 'Object should be on a single line when it fits within the line limit' } ],
 		}),
 	],
 });

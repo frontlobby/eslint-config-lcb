@@ -1,17 +1,14 @@
-import { RuleTester } from 'eslint';
+import type { RuleTester } from 'eslint';
+import { RuleTester as RuleTesterRunner } from 'eslint';
 
-import rule from '../../../lib/rules/align-imports.mjs';
-import { namedCase as namedCaseHelper } from '../../../lib/utils.mjs';
+import { ImportAlignment } from '../../../lib/rules/ImportAlignment.mts';
+import { namedCase as namedCaseHelper, trimCodeWhitespace } from '../../../lib/utils.mts';
 
-const languageOptions = { sourceType : 'module', ecmaVersion : 2015 };
+const languageOptions = { sourceType : 'module', ecmaVersion : 2015 as const };
 
-const ruleTester = new RuleTester();
+const ruleTester = new RuleTesterRunner();
 
-function namedCase(name, testCase, options) {
-	return namedCaseHelper(name, testCase, { languageOptions, ...options });
-}
-
-ruleTester.run('align-imports', rule, trimCodeWhitespace({
+ruleTester.run('align-imports', ImportAlignment.toEslintRule(), trimCodeWhitespace({
 
 	valid : [
 		namedCase('accepts already aligned adjacent default imports', `
@@ -47,6 +44,10 @@ ruleTester.run('align-imports', rule, trimCodeWhitespace({
 			import foo    from 'foo';
 			import bar    from 'bar';
 		`, { options : [ { collapseExtraSpaces : false } ] }),
+
+		namedCase('accepts a long named import when maxLen is not set', `
+			import { alpha, beta, gamma, delta, epsilon, zeta, eta, theta } from 'some/module';
+		`),
 	],
 
 	invalid : [
@@ -227,24 +228,123 @@ ruleTester.run('align-imports', rule, trimCodeWhitespace({
 	],
 }));
 
-// look through the objects to find a code property
-// and trim the whitespace from the beginning and end of the code and and whitespace at the start of lines
-function trimCodeWhitespace(testCases) {
-	// Recursively process arrays or objects and return transformed input
-	if (Array.isArray(testCases)) {
-		return testCases.map(trimCodeWhitespace);
+ruleTester.run('align-imports maxLen', ImportAlignment.toEslintRule(), {
+
+	valid : [
+		namedCase('accepts a correctly wrapped import that cannot fit on one line', {
+			code    : 'import {\n\talpha, beta, gamma, delta, epsilon, zeta, eta, theta\n} from \'some/module\';',
+			options : [ { maxLen : 60 } ],
+		}),
+
+		namedCase('accepts a canonical multiline import that exceeds maxLen when collapsed', {
+			code    : 'import {\n\tveryLongNameOne, veryLongNameTwo, veryLongNameThree, x\n} from \'module\';',
+			options : [ { maxLen : 55 } ],
+		}),
+
+		namedCase('keeps a multiline import when collapsed length is within maxLen but inside the unwrap buffer', {
+			code    : 'import {\n\talpha, beta, gamma\n} from \'mod\';',
+			options : [ { maxLen : 40, maxLenBuffer : 5 } ],
+		}),
+
+		namedCase('accepts a canonical multiline import after reflow when lines sit within the wrap buffer', {
+			code    : 'import {\n\tdateFromMonthDay, daysAgoToDate, Debounce, doWithRetries, getDateRange, getEmailWithoutSubAddress, getFunctionParams, getPropertyDescriptor,\n\tpromiseTimeout, stringify, throttlePerSecond, TimeoutError, waitFor\n} from \'$/lib/utils\';',
+			options : [ { maxLen : 140, maxLenBuffer : 10 } ],
+		}),
+
+		namedCase('keeps a single-line import when line length is within the wrap buffer', {
+			code    : 'import { aaaaaaaaaaaaaaaaaaaaa } from \'x\';',
+			options : [ { maxLen : 40, maxLenBuffer : 5 } ],
+		}),
+	],
+
+	invalid : [
+		namedCase('wraps a single-line named import that exceeds maxLen', {
+			code    : 'import { alpha, beta, gamma, delta, epsilon, zeta, eta, theta } from \'some/module\';',
+			output  : 'import {\n\talpha, beta, gamma, delta, epsilon, zeta, eta, theta\n} from \'some/module\';',
+			options : [ { maxLen : 60 } ],
+			errors  : [ { message : 'Import statement exceeds maximum line length' } ],
+		}),
+
+		namedCase('wraps a single-line import when line length exceeds the wrap buffer', {
+			code    : 'import { aaaaaaaaaaaaaaaaaaaaaaaaa } from \'x\';',
+			output  : 'import {\n\taaaaaaaaaaaaaaaaaaaaaaaaa\n} from \'x\';',
+			options : [ { maxLen : 40, maxLenBuffer : 5 } ],
+			errors  : [ { message : 'Import statement exceeds maximum line length' } ],
+		}),
+
+		namedCase('wraps a mixed import while preserving the default prefix', {
+			code    : 'import Foo, { alpha, beta, gamma, delta, epsilon, zeta, eta } from \'some/module\';',
+			output  : 'import Foo, {\n\talpha, beta, gamma, delta, epsilon, zeta, eta\n} from \'some/module\';',
+			options : [ { maxLen : 55 } ],
+			errors  : [ { message : 'Import statement exceeds maximum line length' } ],
+		}),
+
+		namedCase('unwraps a multiline import that fits on one line', {
+			code    : 'import {\n\tA,\n\tB\n} from \'foo\';',
+			output  : 'import { A, B } from \'foo\';',
+			options : [ { maxLen : 80 } ],
+			errors  : [ { message : 'Import statement should be on a single line when it fits within the line limit' } ],
+		}),
+
+		namedCase('unwraps a mixed multiline import that fits on one line', {
+			code    : 'import Foo, {\n\tA,\n\tB\n} from \'foo\';',
+			output  : 'import Foo, { A, B } from \'foo\';',
+			options : [ { maxLen : 80 } ],
+			errors  : [ { message : 'Import statement should be on a single line when it fits within the line limit' } ],
+		}),
+
+		namedCase('reflows a multiline import with an overlong line', {
+			code    : 'import {\n\tveryLongNameOne, veryLongNameTwo, veryLongNameThree,\n\tx\n} from \'module\';',
+			output  : 'import {\n\tveryLongNameOne, veryLongNameTwo,\n\tveryLongNameThree, x\n} from \'module\';',
+			options : [ { maxLen : 50, maxLenBuffer : 0 } ],
+			errors  : [ { message : 'Import statement exceeds maximum line length' } ],
+		}),
+
+		namedCase('reflows one-specifier-per-line layout into canonical packing', {
+			code    : 'import {\n\talpha,\n\tbeta,\n\tgamma\n} from \'mod\';',
+			output  : 'import {\n\talpha, beta, gamma\n} from \'mod\';',
+			options : [ { maxLen : 30 } ],
+			errors  : [ { message : 'Import statement exceeds maximum line length' } ],
+		}),
+
+		namedCase('reflows multiline import with missing specifier indent', {
+			code    : 'import {\nalpha, beta, gamma\n} from \'mod\';',
+			output  : 'import {\n\talpha, beta, gamma\n} from \'mod\';',
+			options : [ { maxLen : 30 } ],
+			errors  : [ { message : 'Import statement exceeds maximum line length' } ],
+		}),
+
+		namedCase('adds a missing semicolon to a canonical multiline import', {
+			code    : 'import {\n\talpha, beta, gamma\n} from \'mod\'',
+			output  : 'import {\n\talpha, beta, gamma\n} from \'mod\';',
+			options : [ { maxLen : 30 } ],
+			errors  : [ { message : 'Import statement exceeds maximum line length' } ],
+		}),
+
+		namedCase('unwraps a multiline import when collapsed length is below the unwrap buffer', {
+			code    : 'import {\n\tA,\n\tB\n} from \'foo\';',
+			output  : 'import { A, B } from \'foo\';',
+			options : [ { maxLen : 40, maxLenBuffer : 5 } ],
+			errors  : [ { message : 'Import statement should be on a single line when it fits within the line limit' } ],
+		}),
+	],
+});
+
+function namedCase( name: string, testCase: string, options?: Omit<RuleTester.ValidTestCase, 'name' | 'code'>, ): RuleTester.ValidTestCase & { name: string };
+function namedCase( name: string, testCase: RuleTester.InvalidTestCase, options?: Omit<RuleTester.ValidTestCase, 'name' | 'code'>, ): RuleTester.InvalidTestCase & { name: string };
+function namedCase( name: string, testCase: RuleTester.ValidTestCase, options?: Omit<RuleTester.ValidTestCase, 'name' | 'code'>, ): RuleTester.ValidTestCase & { name: string };
+function namedCase(
+	name: string,
+	testCase: string | RuleTester.ValidTestCase | RuleTester.InvalidTestCase,
+	options: Omit<RuleTester.ValidTestCase, 'name' | 'code'> = {},
+) {
+	if (typeof testCase === 'string') {
+		return namedCaseHelper(name, testCase, { languageOptions, ...options });
 	}
-	if (typeof testCases === 'object' && testCases !== null) {
-		return Object.fromEntries(Object.entries(testCases).map(([ key, value ]) => {
-			if ((key === 'code' || key === 'output') && typeof value === 'string') {
-				return [ key, value
-					.split('\n')
-					.map(line => line.replace(/^\s+/, ''))
-					.join('\n')
-					.trim() ];
-			}
-			return [ key, trimCodeWhitespace(value) ];
-		}));
+
+	if ('errors' in testCase) {
+		return namedCaseHelper(name, testCase, { languageOptions, ...options });
 	}
-	return testCases;
+
+	return namedCaseHelper(name, testCase, { languageOptions, ...options });
 }

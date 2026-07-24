@@ -3,8 +3,8 @@
  */
 import { RuleTester } from 'eslint';
 
-import rule from '../../../lib/rules/align-assign.mjs';
-import { namedCase } from '../../../lib/utils.mjs';
+import { AssignAlignment } from '../../../lib/rules/AssignAlignment.mts';
+import { namedCase } from '../../../lib/utils.mts';
 
 const ruleTester = new RuleTester({
 	languageOptions : {
@@ -13,7 +13,7 @@ const ruleTester = new RuleTester({
 	},
 });
 
-ruleTester.run('align-assign', rule, {
+ruleTester.run('align-assign', AssignAlignment.toEslintRule(), {
 	valid : [
 		namedCase('accepts already aligned consecutive assignments', `
 			var a    = 1;
@@ -277,6 +277,6 @@ ruleTester.run('align-assign', rule, {
 	],
 });
 
-function createAlignmentErrors(count) {
+function createAlignmentErrors(count: number) {
 	return Array.from({ length : count }, () => ({ message : 'Assignments should be aligned' }));
 }
