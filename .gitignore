@@ -1,2 +1,5 @@
 # Dependency directories
 node_modules/
+
+# Build output (generated from lib/**/*.mts by `npm run build`; see the `prepare` script)
+dist/

@@ -1,6 +1,6 @@
 {
   "name": "@frontlobby/eslint-config-lcb",
-  "version": "9.0.1",
+  "version": "9.0.2",
   "description": "This holds the base shop standard ESLint configuration file.",
   "license": "MIT",
   "repository": {
@@ -34,7 +34,9 @@
     "./base": "./baseRules.mjs"
   },
   "scripts": {
-    "lint": "eslint .",
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build",
+    "lint": "npm run build && eslint .",
     "typecheck": "tsc --noEmit",
     "test": "npm run typecheck && mocha \"tests/**/*.mts\""
   }

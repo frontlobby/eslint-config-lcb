@@ -21,7 +21,7 @@ const ruleSourceRelaxations = {
 
 export default [
 	{
-		ignores : [ 'tests/**' ],
+		ignores : [ 'tests/**', 'dist/**' ],
 	},
 	...lcbBase,
 	{

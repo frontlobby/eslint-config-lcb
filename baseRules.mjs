@@ -7,7 +7,7 @@ import vuePlugin        from 'eslint-plugin-vue';
 import globals          from 'globals';
 import vueParser        from 'vue-eslint-parser';
 
-import { localRules } from './eslintLocalRules.mts';
+import { localRules } from './dist/eslintLocalRules.mjs';
 
 const parserOptions = { ecmaVersion : 2018 };
 
