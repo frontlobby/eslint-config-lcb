@@ -44,6 +44,10 @@ export class ClassMethodsNewline extends BaseESLintRule {
             if (!isMethodLike(previousMember) || !isMethodLike(currentMember)) {
                 continue;
             }
+            if (hasVSCodeRegionComment(previousMember, currentMember, this.sourceCode)) {
+                this.checkVSCodeRegionMemberGap(previousMember, currentMember);
+                continue;
+            }
             if (isGetterSetterPair(previousMember, currentMember, this.sourceCode)) {
                 this.checkGetterSetterGap(previousMember, currentMember);
                 continue;
@@ -56,7 +60,12 @@ export class ClassMethodsNewline extends BaseESLintRule {
         }
         const finalMember = classBody.body.at(-1);
         if (finalMember && isMethodLike(finalMember)) {
-            this.checkFinalMemberGap(finalMember, classBody);
+            if (hasVSCodeRegionCommentAfterMember(finalMember, classBody, this.sourceCode)) {
+                this.checkVSCodeRegionFinalGap(finalMember, classBody);
+            }
+            else {
+                this.checkFinalMemberGap(finalMember, classBody);
+            }
         }
     }
     checkMemberGap(previousMember, currentMember) {
@@ -64,7 +73,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
         if (blankLineCount === 1) {
             return;
         }
-        const gapRange = [previousMember.range[1], currentMember.range[0]];
+        const gapRange = [previousMember.range[1], getMemberStartRange(currentMember, this.sourceCode)];
         const hasComments = this.sourceCode.getAllComments().some(comment => comment.range[0] >= gapRange[0] && comment.range[1] <= gapRange[1]);
         this.context.report({
             node: currentMember,
@@ -79,7 +88,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
         if (blankLineCount === 0) {
             return;
         }
-        const gapRange = [getter.range[1], setter.range[0]];
+        const gapRange = [getter.range[1], getMemberStartRange(setter, this.sourceCode)];
         const hasComments = this.sourceCode.getAllComments().some(comment => comment.range[0] >= gapRange[0] && comment.range[1] <= gapRange[1]);
         this.context.report({
             node: setter,
@@ -92,12 +101,32 @@ export class ClassMethodsNewline extends BaseESLintRule {
         if (blankLineCount === 0) {
             return;
         }
-        const gapRange = [previousMember.range[1], currentMember.range[0]];
+        const gapRange = [previousMember.range[1], getMemberStartRange(currentMember, this.sourceCode)];
         const hasComments = this.sourceCode.getAllComments().some(comment => comment.range[0] >= gapRange[0] && comment.range[1] <= gapRange[1]);
         this.context.report({
             node: currentMember,
             message: overloadMessage,
             ...(hasComments ? {} : { fix: fixer => fixer.replaceTextRange(gapRange, getDirectGap(currentMember, this.sourceCode)) }),
+        });
+    }
+    checkVSCodeRegionMemberGap(previousMember, currentMember) {
+        const gapRange = [previousMember.range[1], getMemberStartRange(currentMember, this.sourceCode)];
+        this.reportExcessVSCodeRegionBlankLines(currentMember, gapRange, memberMessage);
+    }
+    checkVSCodeRegionFinalGap(finalMember, classBody) {
+        const gapRange = [finalMember.range[1], classBody.range[1] - 1];
+        this.reportExcessVSCodeRegionBlankLines(finalMember, gapRange, closingBraceMessage);
+    }
+    reportExcessVSCodeRegionBlankLines(node, gapRange, message) {
+        const gap = this.sourceCode.text.slice(...gapRange);
+        const collapsedGap = collapseExcessBlankLines(gap);
+        if (gap === collapsedGap) {
+            return;
+        }
+        this.context.report({
+            node,
+            message,
+            fix: fixer => fixer.replaceTextRange(gapRange, collapsedGap),
         });
     }
     checkFinalMemberGap(finalMember, classBody) {
@@ -141,9 +170,20 @@ function isTypeScriptOverloadPair(previousMember, currentMember, sourceCode) {
         && sourceCode.getText(previous.key) === sourceCode.getText(current.key)
         && previous.value?.type === 'TSEmptyBodyFunctionExpression';
 }
+function hasVSCodeRegionComment(previousMember, currentMember, sourceCode) {
+    return hasVSCodeRegionCommentInRange(previousMember.range[1], currentMember.range[0], sourceCode);
+}
+function hasVSCodeRegionCommentAfterMember(member, classBody, sourceCode) {
+    return hasVSCodeRegionCommentInRange(member.range[1], classBody.range[1] - 1, sourceCode);
+}
+function hasVSCodeRegionCommentInRange(start, end, sourceCode) {
+    return sourceCode.getAllComments().some(comment => comment.range[0] >= start
+        && comment.range[1] <= end
+        && /^#(?:end)?region\b/i.test(comment.value.trim()));
+}
 function getBlankLineCount(previousMember, currentMember, sourceCode) {
     const firstGapLine = previousMember.loc.end.line;
-    const lastGapLine = currentMember.loc.start.line - 2;
+    const lastGapLine = getMemberStartLine(currentMember, sourceCode) - 2;
     return sourceCode.lines
         .slice(firstGapLine, lastGapLine + 1)
         .filter(line => line.trim() === '')
@@ -157,16 +197,35 @@ function getBlankLineCountAfterMember(member, classBody, sourceCode) {
 }
 function getRequiredGap(currentMember, sourceCode) {
     const lineEnding = sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
-    const indent = sourceCode.lines[currentMember.loc.start.line - 1].match(/^\s*/)?.[0] ?? '';
+    const indent = sourceCode.lines[getMemberStartLine(currentMember, sourceCode) - 1].match(/^\s*/)?.[0] ?? '';
     return `${lineEnding}${lineEnding}${indent}`;
 }
 function getDirectGap(currentMember, sourceCode) {
     const lineEnding = sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
-    const indent = sourceCode.lines[currentMember.loc.start.line - 1].match(/^\s*/)?.[0] ?? '';
+    const indent = sourceCode.lines[getMemberStartLine(currentMember, sourceCode) - 1].match(/^\s*/)?.[0] ?? '';
     return `${lineEnding}${indent}`;
 }
 function getRequiredGapBeforeClosingBrace(classBody, sourceCode) {
     const lineEnding = sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
     const indent = sourceCode.lines[classBody.loc.end.line - 1].match(/^\s*/)?.[0] ?? '';
     return `${lineEnding}${lineEnding}${indent}`;
+}
+function getMemberStartRange(member, sourceCode) {
+    return getLeadingJsDocComment(member, sourceCode)?.range[0] ?? member.range[0];
+}
+function getMemberStartLine(member, sourceCode) {
+    return getLeadingJsDocComment(member, sourceCode)?.loc?.start.line ?? member.loc.start.line;
+}
+function getLeadingJsDocComment(member, sourceCode) {
+    return sourceCode.getAllComments().find(comment => comment.type === 'Block'
+        && comment.value.startsWith('*')
+        && comment.range[1] <= member.range[0]
+        && sourceCode.text.slice(comment.range[1], member.range[0]).trim() === '');
+}
+function collapseExcessBlankLines(text) {
+    return text.replace(/(?:\r?\n[^\S\r\n]*){3,}/g, consecutiveLineBreaks => {
+        const lineEnding = consecutiveLineBreaks.includes('\r\n') ? '\r\n' : '\n';
+        const indent = consecutiveLineBreaks.match(/[^\S\r\n]*$/)?.[0] ?? '';
+        return `${lineEnding}${lineEnding}${indent}`;
+    });
 }

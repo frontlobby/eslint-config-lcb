@@ -70,6 +70,19 @@ ruleTester.run('class-methods-newline', ClassMethodsNewline.toEslintRule(), {
 			}
 		`),
 
+		namedCase('allows VS Code region comments between methods and before the closing brace', `
+			class Example {
+				first() {}
+
+				// #region STATIC MEMBERS
+
+				static second() {}
+
+				// #endregion STATIC MEMBERS
+
+			}
+		`),
+
 		namedCase('accepts a commented method gap with one blank line', `
 			class Example {
 				first() {}
@@ -184,6 +197,65 @@ ruleTester.run('class-methods-newline', ClassMethodsNewline.toEslintRule(), {
 				}
 			`,
 			errors : [ { message : overloadMessage }, { message : overloadMessage } ],
+		}),
+
+		namedCase('removes extra blank lines before a method JSDoc comment', {
+			code : `
+				class Example {
+					first() {}
+
+
+					/**
+					 * Explains the next method.
+					 */
+					second() {}
+
+				}
+			`,
+			output : `
+				class Example {
+					first() {}
+
+					/**
+					 * Explains the next method.
+					 */
+					second() {}
+
+				}
+			`,
+			errors : [ { message : memberMessage } ],
+		}),
+
+		namedCase('removes excess blank lines around VS Code region comments', {
+			code : `
+				class Example {
+					first() {}
+
+
+					// #region STATIC MEMBERS
+
+
+					static second() {}
+
+
+					// #endregion STATIC MEMBERS
+
+
+				}
+			`,
+			output : `
+				class Example {
+					first() {}
+
+					// #region STATIC MEMBERS
+
+					static second() {}
+
+					// #endregion STATIC MEMBERS
+
+				}
+			`,
+			errors : [ { message : memberMessage }, { message : closingBraceMessage } ],
 		}),
 
 		namedCase('removes extra blank lines between accessors and static methods', {

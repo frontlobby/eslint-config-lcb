@@ -11,6 +11,12 @@ TypeScript overload declarations for the same method, including constructor over
 as a group and must not have blank lines between them or between the final declaration and its
 implementation.
 
+VS Code `#region` and `#endregion` comments may have one surrounding blank line. Excess
+consecutive blank lines around the marked group of methods are removed automatically.
+
+A JSDoc block immediately before a class method is treated as part of that method. The rule checks
+and fixes the gap above the JSDoc block rather than the gap between the comment and the method.
+
 ```ts
 // Correct
 class Example {

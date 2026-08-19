@@ -65,6 +65,11 @@ export class ClassMethodsNewline extends BaseESLintRule {
 				continue;
 			}
 
+			if (hasVSCodeRegionComment(previousMember, currentMember, this.sourceCode)) {
+				this.checkVSCodeRegionMemberGap(previousMember, currentMember);
+				continue;
+			}
+
 			if (isGetterSetterPair(previousMember, currentMember, this.sourceCode)) {
 				this.checkGetterSetterGap(previousMember, currentMember);
 				continue;
@@ -81,7 +86,12 @@ export class ClassMethodsNewline extends BaseESLintRule {
 		const finalMember = classBody.body.at(-1);
 
 		if (finalMember && isMethodLike(finalMember)) {
-			this.checkFinalMemberGap(finalMember, classBody);
+			if (hasVSCodeRegionCommentAfterMember(finalMember, classBody, this.sourceCode)) {
+				this.checkVSCodeRegionFinalGap(finalMember, classBody);
+			}
+			else {
+				this.checkFinalMemberGap(finalMember, classBody);
+			}
 		}
 	}
 
@@ -92,7 +102,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
 			return;
 		}
 
-		const gapRange: [ number, number ] = [ previousMember.range![1], currentMember.range![0] ];
+		const gapRange: [ number, number ] = [ previousMember.range![1], getMemberStartRange(currentMember, this.sourceCode) ];
 		const hasComments                  = this.sourceCode.getAllComments().some(comment =>
 			comment.range![0] >= gapRange[0] && comment.range![1] <= gapRange[1]);
 
@@ -112,7 +122,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
 			return;
 		}
 
-		const gapRange: [ number, number ] = [ getter.range![1], setter.range![0] ];
+		const gapRange: [ number, number ] = [ getter.range![1], getMemberStartRange(setter, this.sourceCode) ];
 		const hasComments                  = this.sourceCode.getAllComments().some(comment =>
 			comment.range![0] >= gapRange[0] && comment.range![1] <= gapRange[1]);
 
@@ -130,7 +140,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
 			return;
 		}
 
-		const gapRange: [ number, number ] = [ previousMember.range![1], currentMember.range![0] ];
+		const gapRange: [ number, number ] = [ previousMember.range![1], getMemberStartRange(currentMember, this.sourceCode) ];
 		const hasComments                  = this.sourceCode.getAllComments().some(comment =>
 			comment.range![0] >= gapRange[0] && comment.range![1] <= gapRange[1]);
 
@@ -138,6 +148,33 @@ export class ClassMethodsNewline extends BaseESLintRule {
 			node    : currentMember,
 			message : overloadMessage,
 			...(hasComments ? {} : { fix : fixer => fixer.replaceTextRange(gapRange, getDirectGap(currentMember, this.sourceCode)) }),
+		});
+	}
+
+	checkVSCodeRegionMemberGap(previousMember: Node, currentMember: Node): void {
+		const gapRange: [ number, number ] = [ previousMember.range![1], getMemberStartRange(currentMember, this.sourceCode) ];
+
+		this.reportExcessVSCodeRegionBlankLines(currentMember, gapRange, memberMessage);
+	}
+
+	checkVSCodeRegionFinalGap(finalMember: Node, classBody: ClassBody): void {
+		const gapRange: [ number, number ] = [ finalMember.range![1], classBody.range![1] - 1 ];
+
+		this.reportExcessVSCodeRegionBlankLines(finalMember, gapRange, closingBraceMessage);
+	}
+
+	reportExcessVSCodeRegionBlankLines(node: Node, gapRange: [ number, number ], message: string): void {
+		const gap          = this.sourceCode.text.slice(...gapRange);
+		const collapsedGap = collapseExcessBlankLines(gap);
+
+		if (gap === collapsedGap) {
+			return;
+		}
+
+		this.context.report({
+			node,
+			message,
+			fix : fixer => fixer.replaceTextRange(gapRange, collapsedGap),
 		});
 	}
 
@@ -194,9 +231,24 @@ function isTypeScriptOverloadPair(previousMember: Node, currentMember: Node, sou
 		&& previous.value?.type === 'TSEmptyBodyFunctionExpression';
 }
 
+function hasVSCodeRegionComment(previousMember: Node, currentMember: Node, sourceCode: SourceCode): boolean {
+	return hasVSCodeRegionCommentInRange(previousMember.range![1], currentMember.range![0], sourceCode);
+}
+
+function hasVSCodeRegionCommentAfterMember(member: Node, classBody: ClassBody, sourceCode: SourceCode): boolean {
+	return hasVSCodeRegionCommentInRange(member.range![1], classBody.range![1] - 1, sourceCode);
+}
+
+function hasVSCodeRegionCommentInRange(start: number, end: number, sourceCode: SourceCode): boolean {
+	return sourceCode.getAllComments().some(comment =>
+		comment.range![0] >= start
+		&& comment.range![1] <= end
+		&& /^#(?:end)?region\b/i.test(comment.value.trim()));
+}
+
 function getBlankLineCount(previousMember: Node, currentMember: Node, sourceCode: SourceCode): number {
 	const firstGapLine = previousMember.loc!.end.line;
-	const lastGapLine  = currentMember.loc!.start.line - 2;
+	const lastGapLine  = getMemberStartLine(currentMember, sourceCode) - 2;
 
 	return sourceCode.lines
 		.slice(firstGapLine, lastGapLine + 1)
@@ -213,14 +265,14 @@ function getBlankLineCountAfterMember(member: Node, classBody: ClassBody, source
 
 function getRequiredGap(currentMember: Node, sourceCode: SourceCode): string {
 	const lineEnding = sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
-	const indent     = sourceCode.lines[currentMember.loc!.start.line - 1]!.match(/^\s*/)?.[0] ?? '';
+	const indent     = sourceCode.lines[getMemberStartLine(currentMember, sourceCode) - 1]!.match(/^\s*/)?.[0] ?? '';
 
 	return `${lineEnding}${lineEnding}${indent}`;
 }
 
 function getDirectGap(currentMember: Node, sourceCode: SourceCode): string {
 	const lineEnding = sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
-	const indent     = sourceCode.lines[currentMember.loc!.start.line - 1]!.match(/^\s*/)?.[0] ?? '';
+	const indent     = sourceCode.lines[getMemberStartLine(currentMember, sourceCode) - 1]!.match(/^\s*/)?.[0] ?? '';
 
 	return `${lineEnding}${indent}`;
 }
@@ -230,4 +282,29 @@ function getRequiredGapBeforeClosingBrace(classBody: ClassBody, sourceCode: Sour
 	const indent     = sourceCode.lines[classBody.loc!.end.line - 1]!.match(/^\s*/)?.[0] ?? '';
 
 	return `${lineEnding}${lineEnding}${indent}`;
+}
+
+function getMemberStartRange(member: Node, sourceCode: SourceCode): number {
+	return getLeadingJsDocComment(member, sourceCode)?.range![0] ?? member.range![0];
+}
+
+function getMemberStartLine(member: Node, sourceCode: SourceCode): number {
+	return getLeadingJsDocComment(member, sourceCode)?.loc?.start.line ?? member.loc!.start.line;
+}
+
+function getLeadingJsDocComment(member: Node, sourceCode: SourceCode) {
+	return sourceCode.getAllComments().find(comment =>
+		comment.type === 'Block'
+		&& comment.value.startsWith('*')
+		&& comment.range![1] <= member.range![0]
+		&& sourceCode.text.slice(comment.range![1], member.range![0]).trim() === '');
+}
+
+function collapseExcessBlankLines(text: string): string {
+	return text.replace(/(?:\r?\n[^\S\r\n]*){3,}/g, consecutiveLineBreaks => {
+		const lineEnding = consecutiveLineBreaks.includes('\r\n') ? '\r\n' : '\n';
+		const indent     = consecutiveLineBreaks.match(/[^\S\r\n]*$/)?.[0] ?? '';
+
+		return `${lineEnding}${lineEnding}${indent}`;
+	});
 }
