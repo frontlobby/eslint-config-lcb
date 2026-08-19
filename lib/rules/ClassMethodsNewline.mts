@@ -65,8 +65,8 @@ export class ClassMethodsNewline extends BaseESLintRule {
 				continue;
 			}
 
-			if (hasVSCodeRegionComment(previousMember, currentMember, this.sourceCode)) {
-				this.checkVSCodeRegionMemberGap(previousMember, currentMember);
+			if (hasCommentsBetweenMembers(previousMember, currentMember, this.sourceCode)) {
+				this.checkCommentMemberGap(previousMember, currentMember);
 				continue;
 			}
 
@@ -86,8 +86,8 @@ export class ClassMethodsNewline extends BaseESLintRule {
 		const finalMember = classBody.body.at(-1);
 
 		if (finalMember && isMethodLike(finalMember)) {
-			if (hasVSCodeRegionCommentAfterMember(finalMember, classBody, this.sourceCode)) {
-				this.checkVSCodeRegionFinalGap(finalMember, classBody);
+			if (hasCommentsAfterMember(finalMember, classBody, this.sourceCode)) {
+				this.checkCommentFinalGap(finalMember, classBody);
 			}
 			else {
 				this.checkFinalMemberGap(finalMember, classBody);
@@ -151,19 +151,19 @@ export class ClassMethodsNewline extends BaseESLintRule {
 		});
 	}
 
-	checkVSCodeRegionMemberGap(previousMember: Node, currentMember: Node): void {
+	checkCommentMemberGap(previousMember: Node, currentMember: Node): void {
 		const gapRange: [ number, number ] = [ previousMember.range![1], getMemberStartRange(currentMember, this.sourceCode) ];
 
-		this.reportExcessVSCodeRegionBlankLines(currentMember, gapRange, memberMessage);
+		this.reportExcessCommentBlankLines(currentMember, gapRange, memberMessage);
 	}
 
-	checkVSCodeRegionFinalGap(finalMember: Node, classBody: ClassBody): void {
+	checkCommentFinalGap(finalMember: Node, classBody: ClassBody): void {
 		const gapRange: [ number, number ] = [ finalMember.range![1], classBody.range![1] - 1 ];
 
-		this.reportExcessVSCodeRegionBlankLines(finalMember, gapRange, closingBraceMessage);
+		this.reportExcessCommentBlankLines(finalMember, gapRange, closingBraceMessage);
 	}
 
-	reportExcessVSCodeRegionBlankLines(node: Node, gapRange: [ number, number ], message: string): void {
+	reportExcessCommentBlankLines(node: Node, gapRange: [ number, number ], message: string): void {
 		const gap          = this.sourceCode.text.slice(...gapRange);
 		const collapsedGap = collapseExcessBlankLines(gap);
 
@@ -231,19 +231,18 @@ function isTypeScriptOverloadPair(previousMember: Node, currentMember: Node, sou
 		&& previous.value?.type === 'TSEmptyBodyFunctionExpression';
 }
 
-function hasVSCodeRegionComment(previousMember: Node, currentMember: Node, sourceCode: SourceCode): boolean {
-	return hasVSCodeRegionCommentInRange(previousMember.range![1], currentMember.range![0], sourceCode);
+function hasCommentsBetweenMembers(previousMember: Node, currentMember: Node, sourceCode: SourceCode): boolean {
+	return hasCommentsInRange(previousMember.range![1], getMemberStartRange(currentMember, sourceCode), sourceCode);
 }
 
-function hasVSCodeRegionCommentAfterMember(member: Node, classBody: ClassBody, sourceCode: SourceCode): boolean {
-	return hasVSCodeRegionCommentInRange(member.range![1], classBody.range![1] - 1, sourceCode);
+function hasCommentsAfterMember(member: Node, classBody: ClassBody, sourceCode: SourceCode): boolean {
+	return hasCommentsInRange(member.range![1], classBody.range![1] - 1, sourceCode);
 }
 
-function hasVSCodeRegionCommentInRange(start: number, end: number, sourceCode: SourceCode): boolean {
+function hasCommentsInRange(start: number, end: number, sourceCode: SourceCode): boolean {
 	return sourceCode.getAllComments().some(comment =>
 		comment.range![0] >= start
-		&& comment.range![1] <= end
-		&& /^#(?:end)?region\b/i.test(comment.value.trim()));
+		&& comment.range![1] <= end);
 }
 
 function getBlankLineCount(previousMember: Node, currentMember: Node, sourceCode: SourceCode): number {

@@ -258,6 +258,32 @@ ruleTester.run('class-methods-newline', ClassMethodsNewline.toEslintRule(), {
 			errors : [ { message : memberMessage }, { message : closingBraceMessage } ],
 		}),
 
+		namedCase('removes excess blank lines around ordinary comments', {
+			code : `
+				class Example {
+					first() {}
+
+
+					// Event handlers
+
+
+					second() {}
+
+				}
+			`,
+			output : `
+				class Example {
+					first() {}
+
+					// Event handlers
+
+					second() {}
+
+				}
+			`,
+			errors : [ { message : memberMessage } ],
+		}),
+
 		namedCase('removes extra blank lines between accessors and static methods', {
 			code : `
 				class Example {
@@ -296,7 +322,7 @@ ruleTester.run('class-methods-newline', ClassMethodsNewline.toEslintRule(), {
 
 				}
 			`,
-			errors : [ { message : memberMessage }, { message : closingBraceMessage } ],
+			errors : [ { message : closingBraceMessage } ],
 		}),
 	],
 });
