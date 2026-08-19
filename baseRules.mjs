@@ -170,7 +170,8 @@ const rules = {
 	'@typescript-eslint/consistent-type-definitions' : [ 'error', 'interface' ],
 	'@typescript-eslint/prefer-namespace-keyword'    : 'error',
 	'@stylistic/type-annotation-spacing'             : 'error',
-	'@typescript-eslint/ban-ts-comment'              : [ 'error', { 'ts-ignore' : 'allow-with-description' } ], // Allow @ts-ignore since it's useful sometimes
+	// Allow @ts-ignore since it's useful sometimes
+	'@typescript-eslint/ban-ts-comment'              : [ 'error', { 'ts-ignore' : 'allow-with-description' } ],
 	'@typescript-eslint/array-type'                  : [ 'error', { default : 'array' } ],
 	'@typescript-eslint/naming-convention'           : [ 'error',
 		{
@@ -235,13 +236,15 @@ const rules = {
 	'vue/no-v-html'                     : 'warn',
 
 	// Custom rules
-	'local-rules/align-assign'      : [ 'error', { maxSpaces : 25 } ],
-	'local-rules/align-enum-values' : 'error',
-	'local-rules/align-imports'     : [ 'error', {
+	'local-rules/align-assign'       : [ 'error', { maxSpaces : 25 } ],
+	'local-rules/align-class-fields' : [ 'error', { maxSpaces : 25 } ],
+	'local-rules/align-enum-values'  : 'error',
+	'local-rules/align-imports'      : [ 'error', {
 		maxSpaces           : 30,
 		collapseExtraSpaces : true,
 		maxLen              : 140,  // +/- 5 buffer
 	} ],
+	'local-rules/class-methods-newline'                  : 'error',
 	'local-rules/multiline-ternary'                      : 'off', // Re-enable once properly tuned [ 'error', { maxLen : 100 } ],
 	'local-rules/prefer-small-ternary'                   : [ 'warn', { maxLen : 130 } ], // Downgraded to warn until behavior is finalized
 	'local-rules/single-line-json-object'                : [ 'error', { maxLen : 130 } ],
@@ -250,8 +253,10 @@ const rules = {
 
 const {
 	'local-rules/align-assign'                           : alignAssignRule,
+	'local-rules/align-class-fields'                     : alignClassFieldsRule,
 	'local-rules/align-enum-values'                      : alignEnumValuesRule,
 	'local-rules/align-imports'                          : alignImportsRule,
+	'local-rules/class-methods-newline'                  : classMethodsNewlineRule,
 	'local-rules/multiline-ternary'                      : multilineTernaryRule,
 	'local-rules/prefer-small-ternary'                   : preferSmallTernaryRule,
 	'local-rules/single-line-json-object'                : singleLineJsonObjectRule,
@@ -283,8 +288,10 @@ export const config = [
 		rules : {
 			...sharedRules,
 			'local-rules/align-assign'                           : alignAssignRule,
+			'local-rules/align-class-fields'                     : alignClassFieldsRule,
 			'local-rules/align-enum-values'                      : alignEnumValuesRule,
 			'local-rules/align-imports'                          : alignImportsRule,
+			'local-rules/class-methods-newline'                  : classMethodsNewlineRule,
 			'local-rules/multiline-ternary'                      : multilineTernaryRule,
 			'local-rules/prefer-small-ternary'                   : preferSmallTernaryRule,
 			'local-rules/single-line-json-object'                : singleLineJsonObjectRule,
