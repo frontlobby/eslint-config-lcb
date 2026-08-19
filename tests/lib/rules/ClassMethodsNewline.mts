@@ -15,7 +15,7 @@ const ruleTester = new RuleTester({
 const memberMessage = 'Class methods should be separated by exactly one blank line';
 const closingBraceMessage = 'The final class method should be followed by exactly one blank line';
 const getterSetterMessage = 'A getter and its setter should not be separated by a blank line';
-const overloadMessage = 'TypeScript method overloads should not be separated by a blank line';
+const overloadMessage = 'TypeScript overload signatures should not be separated by a blank line';
 
 ruleTester.run('class-methods-newline', ClassMethodsNewline.toEslintRule(), {
 	valid : [
@@ -154,6 +154,32 @@ ruleTester.run('class-methods-newline', ClassMethodsNewline.toEslintRule(), {
 					format(value: string | number): string {
 						return String(value);
 					}
+
+				}
+			`,
+			errors : [ { message : overloadMessage }, { message : overloadMessage } ],
+		}),
+
+		namedCase('removes blank lines between TypeScript constructor overloads', {
+			code : `
+				class Example {
+					constructor(value: string);
+
+					constructor(value: number);
+
+					constructor(value: string | number) {}
+
+					method() {}
+
+				}
+			`,
+			output : `
+				class Example {
+					constructor(value: string);
+					constructor(value: number);
+					constructor(value: string | number) {}
+
+					method() {}
 
 				}
 			`,

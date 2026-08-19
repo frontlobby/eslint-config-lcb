@@ -7,7 +7,7 @@ import { getSourceCode }  from '../utils.mts';
 const memberMessage       = 'Class methods should be separated by exactly one blank line';
 const closingBraceMessage = 'The final class method should be followed by exactly one blank line';
 const getterSetterMessage = 'A getter and its setter should not be separated by a blank line';
-const overloadMessage     = 'TypeScript method overloads should not be separated by a blank line';
+const overloadMessage     = 'TypeScript overload signatures should not be separated by a blank line';
 
 type ClassBody = Node & { body: Node[] };
 type MethodLike = Node & {
@@ -185,8 +185,8 @@ function isTypeScriptOverloadPair(previousMember: Node, currentMember: Node, sou
 	const previous = previousMember as MethodLike;
 	const current  = currentMember as MethodLike;
 
-	return previous.kind === 'method'
-		&& current.kind === 'method'
+	return (previous.kind === 'method' || previous.kind === 'constructor')
+		&& previous.kind === current.kind
 		&& previous.static === current.static
 		&& previous.key != null
 		&& current.key != null
