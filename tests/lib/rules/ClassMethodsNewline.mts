@@ -15,6 +15,7 @@ const ruleTester = new RuleTester({
 const memberMessage = 'Class methods should be separated by exactly one blank line';
 const closingBraceMessage = 'The final class method should be followed by exactly one blank line';
 const getterSetterMessage = 'A getter and its setter should not be separated by a blank line';
+const overloadMessage = 'TypeScript method overloads should not be separated by a blank line';
 
 ruleTester.run('class-methods-newline', ClassMethodsNewline.toEslintRule(), {
 	valid : [
@@ -52,6 +53,19 @@ ruleTester.run('class-methods-newline', ClassMethodsNewline.toEslintRule(), {
 				abstract first(): void;
 
 				abstract second(): void;
+
+			}
+		`),
+
+		namedCase('keeps TypeScript method overloads together', `
+			class Example {
+				format(value: string): string;
+				format(value: number): string;
+				format(value: string | number): string {
+					return String(value);
+				}
+
+				other() {}
 
 			}
 		`),
@@ -118,6 +132,32 @@ ruleTester.run('class-methods-newline', ClassMethodsNewline.toEslintRule(), {
 				}
 			`,
 			errors : [ { message : getterSetterMessage } ],
+		}),
+
+		namedCase('removes blank lines between TypeScript method overloads', {
+			code : `
+				class Example {
+					format(value: string): string;
+
+					format(value: number): string;
+
+					format(value: string | number): string {
+						return String(value);
+					}
+
+				}
+			`,
+			output : `
+				class Example {
+					format(value: string): string;
+					format(value: number): string;
+					format(value: string | number): string {
+						return String(value);
+					}
+
+				}
+			`,
+			errors : [ { message : overloadMessage }, { message : overloadMessage } ],
 		}),
 
 		namedCase('removes extra blank lines between accessors and static methods', {

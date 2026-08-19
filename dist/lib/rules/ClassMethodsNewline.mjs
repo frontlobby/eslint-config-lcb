@@ -3,6 +3,7 @@ import { getSourceCode } from "../utils.mjs";
 const memberMessage = 'Class methods should be separated by exactly one blank line';
 const closingBraceMessage = 'The final class method should be followed by exactly one blank line';
 const getterSetterMessage = 'A getter and its setter should not be separated by a blank line';
+const overloadMessage = 'TypeScript method overloads should not be separated by a blank line';
 /**
  * Require exactly one blank line between consecutive class methods and after
  * a class's final method.
@@ -47,6 +48,10 @@ export class ClassMethodsNewline extends BaseESLintRule {
                 this.checkGetterSetterGap(previousMember, currentMember);
                 continue;
             }
+            if (isTypeScriptOverloadPair(previousMember, currentMember, this.sourceCode)) {
+                this.checkOverloadGap(previousMember, currentMember);
+                continue;
+            }
             this.checkMemberGap(previousMember, currentMember);
         }
         const finalMember = classBody.body.at(-1);
@@ -82,6 +87,19 @@ export class ClassMethodsNewline extends BaseESLintRule {
             ...(hasComments ? {} : { fix: fixer => fixer.replaceTextRange(gapRange, getDirectGap(setter, this.sourceCode)) }),
         });
     }
+    checkOverloadGap(previousMember, currentMember) {
+        const blankLineCount = getBlankLineCount(previousMember, currentMember, this.sourceCode);
+        if (blankLineCount === 0) {
+            return;
+        }
+        const gapRange = [previousMember.range[1], currentMember.range[0]];
+        const hasComments = this.sourceCode.getAllComments().some(comment => comment.range[0] >= gapRange[0] && comment.range[1] <= gapRange[1]);
+        this.context.report({
+            node: currentMember,
+            message: overloadMessage,
+            ...(hasComments ? {} : { fix: fixer => fixer.replaceTextRange(gapRange, getDirectGap(currentMember, this.sourceCode)) }),
+        });
+    }
     checkFinalMemberGap(finalMember, classBody) {
         const blankLineCount = getBlankLineCountAfterMember(finalMember, classBody, this.sourceCode);
         if (blankLineCount === 1) {
@@ -111,6 +129,17 @@ function isGetterSetterPair(previousMember, currentMember, sourceCode) {
         && getter.key != null
         && setter.key != null
         && sourceCode.getText(getter.key) === sourceCode.getText(setter.key);
+}
+function isTypeScriptOverloadPair(previousMember, currentMember, sourceCode) {
+    const previous = previousMember;
+    const current = currentMember;
+    return previous.kind === 'method'
+        && current.kind === 'method'
+        && previous.static === current.static
+        && previous.key != null
+        && current.key != null
+        && sourceCode.getText(previous.key) === sourceCode.getText(current.key)
+        && previous.value?.type === 'TSEmptyBodyFunctionExpression';
 }
 function getBlankLineCount(previousMember, currentMember, sourceCode) {
     const firstGapLine = previousMember.loc.end.line;
