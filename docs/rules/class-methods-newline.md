@@ -7,9 +7,8 @@ fields and static blocks, are not considered by the rule.
 An adjacent getter and setter with the same name are treated as a coupled pair and must not have a
 blank line between them.
 
-TypeScript overload declarations for the same method, including constructor overloads, are treated
-as a group and must not have blank lines between them or between the final declaration and its
-implementation.
+TypeScript overload signatures, including constructor overloads, follow the same spacing rule as
+other class methods. This lets each signature have its own JSDoc block.
 
 Comments between class methods, including VS Code `#region` and `#endregion` markers, may have
 one surrounding blank line. Excess consecutive blank lines are removed automatically.

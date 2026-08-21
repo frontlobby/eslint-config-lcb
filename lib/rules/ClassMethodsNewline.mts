@@ -7,14 +7,12 @@ import { getSourceCode }  from '../utils.mts';
 const memberMessage       = 'Class methods should be separated by exactly one blank line';
 const closingBraceMessage = 'The final class method should be followed by exactly one blank line';
 const getterSetterMessage = 'A getter and its setter should not be separated by a blank line';
-const overloadMessage     = 'TypeScript overload signatures should not be separated by a blank line';
 
 type ClassBody = Node & { body: Node[] };
 type MethodLike = Node & {
 	kind?: string;
 	key?: Node;
 	static?: boolean;
-	value?: { type?: string };
 };
 
 /**
@@ -75,11 +73,6 @@ export class ClassMethodsNewline extends BaseESLintRule {
 				continue;
 			}
 
-			if (isTypeScriptOverloadPair(previousMember, currentMember, this.sourceCode)) {
-				this.checkOverloadGap(previousMember, currentMember);
-				continue;
-			}
-
 			this.checkMemberGap(previousMember, currentMember);
 		}
 
@@ -130,24 +123,6 @@ export class ClassMethodsNewline extends BaseESLintRule {
 			node    : setter,
 			message : getterSetterMessage,
 			...(hasComments ? {} : { fix : fixer => fixer.replaceTextRange(gapRange, getDirectGap(setter, this.sourceCode)) }),
-		});
-	}
-
-	checkOverloadGap(previousMember: Node, currentMember: Node): void {
-		const blankLineCount = getBlankLineCount(previousMember, currentMember, this.sourceCode);
-
-		if (blankLineCount === 0) {
-			return;
-		}
-
-		const gapRange: [ number, number ] = [ previousMember.range![1], getMemberStartRange(currentMember, this.sourceCode) ];
-		const hasComments                  = this.sourceCode.getAllComments().some(comment =>
-			comment.range![0] >= gapRange[0] && comment.range![1] <= gapRange[1]);
-
-		this.context.report({
-			node    : currentMember,
-			message : overloadMessage,
-			...(hasComments ? {} : { fix : fixer => fixer.replaceTextRange(gapRange, getDirectGap(currentMember, this.sourceCode)) }),
 		});
 	}
 
@@ -216,19 +191,6 @@ function isGetterSetterPair(previousMember: Node, currentMember: Node, sourceCod
 		&& getter.key != null
 		&& setter.key != null
 		&& sourceCode.getText(getter.key) === sourceCode.getText(setter.key);
-}
-
-function isTypeScriptOverloadPair(previousMember: Node, currentMember: Node, sourceCode: SourceCode): boolean {
-	const previous = previousMember as MethodLike;
-	const current  = currentMember as MethodLike;
-
-	return (previous.kind === 'method' || previous.kind === 'constructor')
-		&& previous.kind === current.kind
-		&& previous.static === current.static
-		&& previous.key != null
-		&& current.key != null
-		&& sourceCode.getText(previous.key) === sourceCode.getText(current.key)
-		&& previous.value?.type === 'TSEmptyBodyFunctionExpression';
 }
 
 function hasCommentsBetweenMembers(previousMember: Node, currentMember: Node, sourceCode: SourceCode): boolean {
