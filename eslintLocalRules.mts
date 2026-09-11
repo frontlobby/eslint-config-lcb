@@ -13,6 +13,7 @@ import { EnumValueAlignment }                 from './lib/rules/EnumValueAlignme
 import { ImportAlignment }                    from './lib/rules/ImportAlignment.mts';
 import { MultilineTernary }                   from './lib/rules/MultilineTernary.mts';
 import { PreferSmallTernary }                 from './lib/rules/PreferSmallTernary.mts';
+import { PreferUnescapedQuotes }              from './lib/rules/PreferUnescapedQuotes.mts';
 import { SingleLineJsonObject }               from './lib/rules/SingleLineJsonObject.mts';
 import { VueFacingDecoratorPropRequirements } from './lib/rules/VueFacingDecoratorPropRequirements.mts';
 
@@ -24,6 +25,7 @@ export const localRules: Record<string, Rule.RuleModule> = {
 	'class-methods-newline'                  : ClassMethodsNewline.toEslintRule(),
 	'multiline-ternary'                      : MultilineTernary.toEslintRule(),
 	'prefer-small-ternary'                   : PreferSmallTernary.toEslintRule(),
+	'prefer-unescaped-quotes'                : PreferUnescapedQuotes.toEslintRule(),
 	'single-line-json-object'                : SingleLineJsonObject.toEslintRule(),
 	'vue-facing-decorator-prop-requirements' : VueFacingDecoratorPropRequirements.toEslintRule(),
 };

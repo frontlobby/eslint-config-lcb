@@ -5,6 +5,7 @@ import { EnumValueAlignment } from "./lib/rules/EnumValueAlignment.mjs";
 import { ImportAlignment } from "./lib/rules/ImportAlignment.mjs";
 import { MultilineTernary } from "./lib/rules/MultilineTernary.mjs";
 import { PreferSmallTernary } from "./lib/rules/PreferSmallTernary.mjs";
+import { PreferUnescapedQuotes } from "./lib/rules/PreferUnescapedQuotes.mjs";
 import { SingleLineJsonObject } from "./lib/rules/SingleLineJsonObject.mjs";
 import { VueFacingDecoratorPropRequirements } from "./lib/rules/VueFacingDecoratorPropRequirements.mjs";
 export const localRules = {
@@ -15,6 +16,7 @@ export const localRules = {
     'class-methods-newline': ClassMethodsNewline.toEslintRule(),
     'multiline-ternary': MultilineTernary.toEslintRule(),
     'prefer-small-ternary': PreferSmallTernary.toEslintRule(),
+    'prefer-unescaped-quotes': PreferUnescapedQuotes.toEslintRule(),
     'single-line-json-object': SingleLineJsonObject.toEslintRule(),
     'vue-facing-decorator-prop-requirements': VueFacingDecoratorPropRequirements.toEslintRule(),
 };

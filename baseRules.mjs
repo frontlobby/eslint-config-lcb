@@ -247,6 +247,7 @@ const rules = {
 	'local-rules/class-methods-newline'                  : 'error',
 	'local-rules/multiline-ternary'                      : 'off', // Re-enable once properly tuned [ 'error', { maxLen : 100 } ],
 	'local-rules/prefer-small-ternary'                   : [ 'warn', { maxLen : 130 } ], // Downgraded to warn until behavior is finalized
+	'local-rules/prefer-unescaped-quotes'                : 'error',
 	'local-rules/single-line-json-object'                : [ 'error', { maxLen : 130 } ],
 	'local-rules/vue-facing-decorator-prop-requirements' : 'error',
 };
@@ -259,6 +260,7 @@ const {
 	'local-rules/class-methods-newline'                  : classMethodsNewlineRule,
 	'local-rules/multiline-ternary'                      : multilineTernaryRule,
 	'local-rules/prefer-small-ternary'                   : preferSmallTernaryRule,
+	'local-rules/prefer-unescaped-quotes'                : preferUnescapedQuotesRule,
 	'local-rules/single-line-json-object'                : singleLineJsonObjectRule,
 	'local-rules/vue-facing-decorator-prop-requirements' : vueFacingDecoratorPropRequirementsRule,
 	...sharedRules
@@ -294,6 +296,7 @@ export const config = [
 			'local-rules/class-methods-newline'                  : classMethodsNewlineRule,
 			'local-rules/multiline-ternary'                      : multilineTernaryRule,
 			'local-rules/prefer-small-ternary'                   : preferSmallTernaryRule,
+			'local-rules/prefer-unescaped-quotes'                : preferUnescapedQuotesRule,
 			'local-rules/single-line-json-object'                : singleLineJsonObjectRule,
 			'local-rules/vue-facing-decorator-prop-requirements' : vueFacingDecoratorPropRequirementsRule,
 		},
