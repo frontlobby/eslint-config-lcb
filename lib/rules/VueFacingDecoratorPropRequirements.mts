@@ -82,6 +82,7 @@ export class VueFacingDecoratorPropRequirements extends BaseESLintRule {
 
 	reportPropDecorator(node: PropertyDefinition, decorator: Decorator): void {
 		const expression = decorator.expression;
+
 		if (expression.type === 'Identifier') {
 			this.context.report({ node : decorator, messageId : 'missingPropOptions' });
 			return;
@@ -199,7 +200,6 @@ function getDecoratorName(expression: Expression | null | undefined): string | n
 	if (expression.type === 'Identifier') {
 		return expression.name;
 	}
-
 	return expression.type === 'CallExpression' && expression.callee.type === 'Identifier' ? expression.callee.name : null;
 }
 
@@ -219,7 +219,6 @@ function getStaticPropertyName(property: Property): string | null {
 	if (property.key.type === 'Identifier') {
 		return property.key.name;
 	}
-
 	return property.key.type === 'Literal' && typeof property.key.value === 'string' ? property.key.value : null;
 }
 
@@ -262,13 +261,11 @@ function analyzePropCall(expression: CallExpression): PropCallAnalysis {
 	if (hasDefault && hasRequiredTrue) {
 		return { kind : 'conflictingPropOptions' };
 	}
-
 	return !hasDefault && !hasRequiredTrue ? { kind : 'missingPropOptions' } : { kind : 'valid' };
 }
 
 function getClassNode(node: PropertyDefinition): ClassWithDecorators | null {
 	const parent = node.parent;
-
 	if (!parent || parent.type !== 'ClassBody') {
 		return null;
 	}

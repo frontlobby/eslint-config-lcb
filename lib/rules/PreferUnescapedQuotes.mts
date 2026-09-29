@@ -50,13 +50,11 @@ export class PreferUnescapedQuotes extends BaseESLintRule {
 		}
 
 		const raw = this.sourceCode.getText(node);
-
 		if (!raw.startsWith("'")) {
 			return;
 		}
 
 		const converted = toDoubleQuoted(raw);
-
 		if (!converted) {
 			return;
 		}
@@ -89,7 +87,6 @@ function toDoubleQuoted(raw: string): string | null {
 
 		const escaped = body[index + 1]!;
 		index++;
-
 		if (escaped === '"') {
 			return null;
 		}

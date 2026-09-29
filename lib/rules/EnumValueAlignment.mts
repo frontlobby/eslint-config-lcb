@@ -46,7 +46,6 @@ export class EnumValueAlignment extends BaseESLintRule {
 	checkEnum(node: TSEnumDeclaration): void {
 		const { members } = node;
 		const lines       = members.map(member => this.getLineInfo(member)).filter((line): line is LineInfo => Boolean(line));
-
 		if (_.isEmpty(lines)) {
 			return;
 		}
@@ -62,7 +61,6 @@ export class EnumValueAlignment extends BaseESLintRule {
 
 		for (const block of blocks) {
 			const blockLines = block.map(member => this.getLineInfo(member)).filter((line): line is LineInfo => Boolean(line));
-
 			if (blockLines.length < 2) {
 				continue;
 			}
@@ -81,7 +79,6 @@ export class EnumValueAlignment extends BaseESLintRule {
 
 		const textBeforeEquals = this.sourceCode.text.slice(member.id.range![1], equalsToken.range[0]);
 		const textAfterEquals  = this.sourceCode.text.slice(equalsToken.range[1], init.range![0]);
-
 		if (textBeforeEquals === ' ' && textAfterEquals === ' ') {
 			return;
 		}
@@ -92,7 +89,6 @@ export class EnumValueAlignment extends BaseESLintRule {
 			message : messageSpacing,
 			fix     : fixer => {
 				const fixes: Rule.Fix[] = [];
-
 				if (textBeforeEquals !== ' ') {
 					fixes.push(fixer.replaceTextRange([ member.id.range![1], equalsToken.range[0] ], ' '));
 				}
@@ -100,7 +96,6 @@ export class EnumValueAlignment extends BaseESLintRule {
 				if (textAfterEquals !== ' ') {
 					fixes.push(fixer.replaceTextRange([ equalsToken.range[1], init.range![0] ], ' '));
 				}
-
 				return fixes.length === 1 ? fixes[0]! : fixes;
 			},
 		});
@@ -127,6 +122,7 @@ export class EnumValueAlignment extends BaseESLintRule {
 			if (token.value === '=') {
 				return token as EqualsToken;
 			}
+
 			token = this.sourceCode.getTokenAfter(token);
 		}
 
@@ -182,7 +178,6 @@ interface LineInfo {
 /** Every enum member lies on a single source line, and all members share that line. */
 function isMembersOnOneSourceLine(node: TSEnumDeclaration): boolean {
 	const { members } = node;
-
 	if (_.isEmpty(members)) {
 		return false;
 	}
@@ -216,7 +211,6 @@ function splitMembersIntoBlocksByLineGaps(members: TSEnumMember[]): TSEnumMember
 	for (let i = 1; i < members.length; i++) {
 		const prev = members[i - 1]!;
 		const curr = members[i]!;
-
 		if (hasInterveningLineBetweenMembers(prev, curr)) {
 			blocks.push([]);
 		}

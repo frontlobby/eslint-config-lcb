@@ -63,7 +63,8 @@ export class MultilineTernary extends BaseESLintRule {
 		super();
 		this.context    = context;
 		this.sourceCode = getSourceCode(context);
-		this.options    = Object.assign({
+
+		this.options = Object.assign({
 			maxLen       : defaultMaxLen,
 			maxLenBuffer : 5,
 		}, context.options[0] as MultilineTernaryOptions | undefined);
@@ -94,7 +95,6 @@ export class MultilineTernary extends BaseESLintRule {
 
 	checkSingleLineTernary(node: ConditionalExpression): void {
 		const line = getLine(node, this.sourceCode);
-
 		if (line.length <= this.getWrapMaxLen()) {
 			return;
 		}
@@ -109,7 +109,6 @@ export class MultilineTernary extends BaseESLintRule {
 	checkMultiLineTernary(node: ConditionalExpression): void {
 		const replacement = getSingleLineTernaryText(node, this.sourceCode);
 		const line        = getReplacementLine(node, replacement, this.sourceCode);
-
 		if (line.length > this.getUnwrapMaxLen()) {
 			return;
 		}

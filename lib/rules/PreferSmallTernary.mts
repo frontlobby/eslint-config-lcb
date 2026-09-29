@@ -75,7 +75,6 @@ export class PreferSmallTernary extends BaseESLintRule {
 
 		const consequentBranch = getBlockBranchAction(node.consequent);
 		const alternateBranch  = getBlockBranchAction(node.alternate!);
-
 		if (!consequentBranch || !alternateBranch || !branchesMatch(consequentBranch, alternateBranch, this.sourceCode)) {
 			return;
 		}
@@ -92,13 +91,11 @@ export class PreferSmallTernary extends BaseESLintRule {
 
 	tryConsecutive(node: IfStatementWithParent): void {
 		const { parent } = node;
-
 		if (parent.type !== 'BlockStatement') {
 			return;
 		}
 
 		const siblingIndex = getSiblingIndex(parent, node);
-
 		if (siblingIndex === -1 || siblingIndex + 1 >= parent.body.length) {
 			return;
 		}
@@ -106,7 +103,6 @@ export class PreferSmallTernary extends BaseESLintRule {
 		const nextStatement    = parent.body[siblingIndex + 1]!;
 		const consequentBranch = getBlockBranchAction(node.consequent);
 		const alternateBranch  = getStatementBranchAction(nextStatement);
-
 		if (!consequentBranch || !alternateBranch || !branchesMatch(consequentBranch, alternateBranch, this.sourceCode)) {
 			return;
 		}
@@ -127,7 +123,6 @@ export class PreferSmallTernary extends BaseESLintRule {
 		}
 
 		const lineLength = getReplacementLineLength(node.loc!.start.line, node.loc!.start.column, replacement, this.sourceCode);
-
 		if (lineLength >= this.maxLen) {
 			return;
 		}
@@ -162,7 +157,6 @@ function getBlockBodyStatement(blockOrStatement: Statement): Statement | null {
 	if (blockOrStatement.type !== 'BlockStatement') {
 		return null;
 	}
-
 	return blockOrStatement.body.length !== 1 ? null : blockOrStatement.body[0]!;
 }
 
@@ -174,7 +168,6 @@ function getBlockBranchAction(branch: Statement): BranchAction | null {
 
 function getStatementBranchAction(statement: Statement): BranchAction | null {
 	const returnArgument = getReturnArgument(statement);
-
 	if (returnArgument) {
 		return { type : 'return', value : returnArgument };
 	}
@@ -205,7 +198,6 @@ function branchesMatch(consequentBranch: BranchAction, alternateBranch: BranchAc
 	if (consequentBranch.type !== alternateBranch.type) {
 		return false;
 	}
-
 	return consequentBranch.type === 'return' ? true : hasSameAssignmentTarget(consequentBranch.left, (alternateBranch as AssignBranch).left, sourceCode);
 }
 
@@ -225,7 +217,6 @@ function isEligibleBranch(test: Expression, consequentBranch: BranchAction, alte
 	if (isNestedTernary(consequentBranch.value) || isNestedTernary(alternateBranch.value)) {
 		return false;
 	}
-
 	return isCleanSpan(test.range![0], alternateBranch.value.range![1], sourceCode);
 }
 
@@ -237,7 +228,6 @@ function buildReplacement(test: Expression, consequentBranch: BranchAction, alte
 	const testText  = sourceCode.getText(test);
 	const trueText  = sourceCode.getText(consequentBranch.value);
 	const falseText = sourceCode.getText(alternateBranch.value);
-
 	if (consequentBranch.type === 'return') {
 		return `return ${testText} ? ${trueText} : ${falseText};`;
 	}

@@ -9,6 +9,7 @@ const closingBraceMessage = 'The final class method should be followed by exactl
 const getterSetterMessage = 'A getter and its setter should not be separated by a blank line';
 
 type ClassBody = Node & { body: Node[] };
+
 type MethodLike = Node & {
 	kind?: string;
 	key?: Node;
@@ -58,7 +59,6 @@ export class ClassMethodsNewline extends BaseESLintRule {
 		for (let index = 1; index < classBody.body.length; index++) {
 			const previousMember = classBody.body[index - 1]!;
 			const currentMember  = classBody.body[index]!;
-
 			if (!isMethodLike(previousMember) || !isMethodLike(currentMember)) {
 				continue;
 			}
@@ -90,7 +90,6 @@ export class ClassMethodsNewline extends BaseESLintRule {
 
 	checkMemberGap(previousMember: Node, currentMember: Node): void {
 		const blankLineCount = getBlankLineCount(previousMember, currentMember, this.sourceCode);
-
 		if (blankLineCount === 1) {
 			return;
 		}
@@ -110,7 +109,6 @@ export class ClassMethodsNewline extends BaseESLintRule {
 
 	checkGetterSetterGap(getter: Node, setter: Node): void {
 		const blankLineCount = getBlankLineCount(getter, setter, this.sourceCode);
-
 		if (blankLineCount === 0) {
 			return;
 		}
@@ -141,21 +139,15 @@ export class ClassMethodsNewline extends BaseESLintRule {
 	reportExcessCommentBlankLines(node: Node, gapRange: [ number, number ], message: string): void {
 		const gap          = this.sourceCode.text.slice(...gapRange);
 		const collapsedGap = collapseExcessBlankLines(gap);
-
 		if (gap === collapsedGap) {
 			return;
 		}
 
-		this.context.report({
-			node,
-			message,
-			fix : fixer => fixer.replaceTextRange(gapRange, collapsedGap),
-		});
+		this.context.report({ node, message, fix : fixer => fixer.replaceTextRange(gapRange, collapsedGap) });
 	}
 
 	checkFinalMemberGap(finalMember: Node, classBody: ClassBody): void {
 		const blankLineCount = getBlankLineCountAfterMember(finalMember, classBody, this.sourceCode);
-
 		if (blankLineCount === 1) {
 			return;
 		}

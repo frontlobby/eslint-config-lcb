@@ -59,7 +59,8 @@ export class SingleLineJsonObject extends BaseESLintRule {
 		super();
 		this.context    = context;
 		this.sourceCode = getSourceCode(context);
-		this.options    = Object.assign({
+
+		this.options = Object.assign({
 			maxLen       : defaultMaxLen,
 			maxLenBuffer : 5,
 		}, context.options[0] as SingleLineJsonObjectOptions | undefined);
@@ -93,7 +94,6 @@ export class SingleLineJsonObject extends BaseESLintRule {
 
 	checkSingleLineObject(node: ObjectExpressionWithParent): void {
 		const line = getLine(node, this.sourceCode);
-
 		if (line.length <= this.getWrapMaxLen() || isEmpty(node.properties)) {
 			return;
 		}
@@ -108,7 +108,6 @@ export class SingleLineJsonObject extends BaseESLintRule {
 	checkMultiLineObject(node: ObjectExpressionWithParent): void {
 		const replacement = getSingleLineObjectText(node, this.sourceCode);
 		const line        = getReplacementLine(node, replacement, this.sourceCode);
-
 		if (line.length > this.getUnwrapMaxLen()) {
 			return;
 		}
@@ -191,7 +190,8 @@ function getSingleLineObjectText(node: ObjectExpression, sourceCode: SourceCode)
 function getMultiLineObjectText(node: ObjectExpression, sourceCode: SourceCode): string {
 	const baseIndent     = getLineIndent(node, sourceCode);
 	const propertyIndent = `${baseIndent}\t`;
-	const properties     = node.properties
+
+	const properties = node.properties
 		.map(property => `${propertyIndent}${getPropertyText(property, sourceCode)},`)
 		.join('\n');
 
@@ -202,7 +202,6 @@ function getPropertyText(property: ObjectProperty, sourceCode: SourceCode): stri
 	if (property.type === 'SpreadElement') {
 		return sourceCode.getText(property);
 	}
-
 	return property.shorthand ? sourceCode.getText(property) : `${getKeyText(property, sourceCode)} : ${getValueText(property.value as Expression, sourceCode)}`;
 }
 
@@ -231,7 +230,6 @@ function getValueText(node: Expression | SpreadElement, sourceCode: SourceCode):
 	if (node.type === 'ArrayExpression') {
 		return isEmpty(node.elements) ? '[]' : `[ ${node.elements.map(element => getValueText(element!, sourceCode)).join(', ')} ]`;
 	}
-
 	return sourceCode.getText(node);
 }
 

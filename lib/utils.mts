@@ -8,7 +8,6 @@ export function hasPropsWithValues(node: Node | null | undefined, attributes: Re
 	if (!node) {
 		return false;
 	}
-
 	return _.isEmpty(attributes) ? true : _.every(attributes, (val, key) => _.get(node, key) === attributes[key]);
 }
 
@@ -99,7 +98,6 @@ export function getLiteralModuleNamesFromRequireCall(node: Node): Expression[] {
 	if (!firstArgument || firstArgument.type !== 'ArrayExpression') {
 		return [];
 	}
-
 	return firstArgument.elements.filter((element): element is Expression => element !== null && element.type === 'Literal');
 }
 
@@ -110,7 +108,6 @@ export function lodashAutofix(
 	fixer: Rule.RuleFixer
 ): ReturnType<Rule.RuleFixer['replaceText']> | undefined {
 	let scope: NodeWithParent = node.parent as NodeWithParent;
-
 	if (!scope || scope.type !== 'CallExpression' || scope.arguments.length > 1) {
 		return;
 	}
@@ -131,11 +128,9 @@ export function lodashAutofix(
 	const fixToAppend = negate ? ` !== ${type}` : ` === ${type}`;
 	const sourceCode  = getSourceCode(context);
 	let fixedCode     = sourceCode.getText(arg) + fixToAppend;
-
 	if (scope.parent?.type === 'BinaryExpression') {
 		fixedCode = `(${fixedCode})`;
 	}
-
 	return fixer.replaceText(scope, fixedCode);
 }
 
@@ -180,6 +175,7 @@ export function trimCodeWhitespace<T>(testCases: T): T {
 					.join('\n')
 					.trim() ];
 			}
+
 			return [ key, trimCodeWhitespace(value) ];
 		})) as T;
 	}
