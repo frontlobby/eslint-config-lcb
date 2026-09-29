@@ -79,6 +79,7 @@ export class ClassFieldsAlignment extends BaseESLintRule {
 				if (currentBlock.length > 0) {
 					blocks.push(currentBlock);
 				}
+
 				currentBlock = field ? [ field ] : [];
 			}
 			else if (this.isWithinMaxSpacing(field, previousField)) {
@@ -95,7 +96,6 @@ export class ClassFieldsAlignment extends BaseESLintRule {
 		if (currentBlock.length > 0) {
 			blocks.push(currentBlock);
 		}
-
 		return blocks;
 	}
 
@@ -129,6 +129,7 @@ export class ClassFieldsAlignment extends BaseESLintRule {
 			if (token.value === '=') {
 				return token;
 			}
+
 			token = this.sourceCode.getTokenAfter(token);
 		}
 

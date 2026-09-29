@@ -245,19 +245,20 @@ const rules = {
 		maxLen              : 140,  // +/- 5 buffer
 	} ],
 	'local-rules/class-methods-newline'                  : 'error',
+	'local-rules/multiline-statement-padding'            : 'error',
 	'local-rules/multiline-ternary'                      : 'off', // Re-enable once properly tuned [ 'error', { maxLen : 100 } ],
 	'local-rules/prefer-small-ternary'                   : [ 'warn', { maxLen : 130 } ], // Downgraded to warn until behavior is finalized
 	'local-rules/prefer-unescaped-quotes'                : 'error',
 	'local-rules/single-line-json-object'                : [ 'error', { maxLen : 130 } ],
 	'local-rules/vue-facing-decorator-prop-requirements' : 'error',
 };
-
 const {
 	'local-rules/align-assign'                           : alignAssignRule,
 	'local-rules/align-class-fields'                     : alignClassFieldsRule,
 	'local-rules/align-enum-values'                      : alignEnumValuesRule,
 	'local-rules/align-imports'                          : alignImportsRule,
 	'local-rules/class-methods-newline'                  : classMethodsNewlineRule,
+	'local-rules/multiline-statement-padding'            : multilineStatementPaddingRule,
 	'local-rules/multiline-ternary'                      : multilineTernaryRule,
 	'local-rules/prefer-small-ternary'                   : preferSmallTernaryRule,
 	'local-rules/prefer-unescaped-quotes'                : preferUnescapedQuotesRule,
@@ -294,6 +295,7 @@ export const config = [
 			'local-rules/align-enum-values'                      : alignEnumValuesRule,
 			'local-rules/align-imports'                          : alignImportsRule,
 			'local-rules/class-methods-newline'                  : classMethodsNewlineRule,
+			'local-rules/multiline-statement-padding'            : multilineStatementPaddingRule,
 			'local-rules/multiline-ternary'                      : multilineTernaryRule,
 			'local-rules/prefer-small-ternary'                   : preferSmallTernaryRule,
 			'local-rules/prefer-unescaped-quotes'                : preferUnescapedQuotesRule,

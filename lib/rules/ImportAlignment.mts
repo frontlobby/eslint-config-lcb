@@ -82,7 +82,8 @@ export class ImportAlignment extends BaseESLintRule {
 		this.context                        = context;
 		this.sourceCode                     = getSourceCode(context);
 		this.hasExplicitCollapseExtraSpaces = Object.prototype.hasOwnProperty.call(context.options[0] || {}, 'collapseExtraSpaces');
-		this.options                        = Object.assign({
+
+		this.options = Object.assign({
 			collapseExtraSpaces : false,
 			minColumnWidth      : 0,
 			maxSpaces           : 25,
@@ -96,7 +97,6 @@ export class ImportAlignment extends BaseESLintRule {
 		return {
 			ImportDeclaration(node) {
 				const importNode = node as unknown as ImportDeclarationNode;
-
 				if (importAlignment.checkMaxLen(importNode)) {
 					return;
 				}
@@ -109,10 +109,8 @@ export class ImportAlignment extends BaseESLintRule {
 				const line             = surroundingLines.find(surroundingLine => surroundingLine.node === importNode)!;
 				const { alignmentColumn, groupLines } = importAlignment.getAlignmentInfo(line, surroundingLines);
 				const shouldCollapse                  = importAlignment.shouldCollapseExtraSpaces(groupLines);
-				const lineDiffs                       = groupLines.map(groupLine => ({
-					diff : alignmentColumn - groupLine.fromTokenStart,
-					line : groupLine,
-				}));
+
+				const lineDiffs = groupLines.map(groupLine => ({ diff : alignmentColumn - groupLine.fromTokenStart, line : groupLine }));
 
 				if (importAlignment.shouldReportGroupedDiff(lineDiffs, shouldCollapse)) {
 					const lineDiff = lineDiffs.find(({ diff }) => diff < 0);
@@ -131,7 +129,6 @@ export class ImportAlignment extends BaseESLintRule {
 
 	checkMaxLen(node: ImportDeclaration): boolean {
 		const { maxLen } = this.options;
-
 		if (!maxLen || !node.specifiers.some(specifier => specifier.type === 'ImportSpecifier')) {
 			return false;
 		}
@@ -277,10 +274,12 @@ export class ImportAlignment extends BaseESLintRule {
 			const currentLine  = importNode.loc.start.line;
 
 			const neighbouringNode = parentBody[nodeLocation + direction];
+
 			if (neighbouringNode && self.isSuitableImport(neighbouringNode) && neighbouringNode.loc.start.line === currentLine + direction) {
 				const neighbours = findImport(neighbouringNode, direction);
 				return direction < 0 ? [ ...neighbours, neighbouringNode ] : [ neighbouringNode, ...neighbours ];
 			}
+
 			return [];
 		}
 	}
@@ -322,7 +321,6 @@ export class ImportAlignment extends BaseESLintRule {
 		if (this.options.collapseExtraSpaces) {
 			return true;
 		}
-
 		return this.hasExplicitCollapseExtraSpaces ? false : new Set(lines.map(line => line.prevTokenEnd)).size === 1;
 	}
 
@@ -333,7 +331,6 @@ export class ImportAlignment extends BaseESLintRule {
 			const minPrevTokenEnd = Math.min(...candidateLines.map(line => line.prevTokenEnd));
 			const maxPrevTokenEnd = Math.max(...candidateLines.map(line => line.prevTokenEnd));
 			const alignmentColumn = this.applyMinColumnWidth(1 + maxPrevTokenEnd);
-
 			if (alignmentColumn - minPrevTokenEnd <= this.options.maxSpaces) {
 				return { alignmentColumn, groupLines : candidateLines };
 			}
@@ -353,7 +350,6 @@ export class ImportAlignment extends BaseESLintRule {
 
 			return this.resolveCollapsedGroup(currentLine, candidateLines.filter(line => !nextLines.includes(line)), strategy);
 		}
-
 		return {
 			alignmentColumn : this.applyMinColumnWidth(Math.max(0, ...lines.map(line => line.fromTokenStart))),
 			groupLines      : lines,
@@ -459,11 +455,9 @@ function replaceImportText(
 ): Rule.Fix {
 	const finalText  = `${text};`;
 	const tokenAfter = sourceCode.getTokenAfter(node);
-
 	if (tokenAfter && tokenAfter.value === ';') {
 		return fixer.replaceTextRange([ node.range![0], tokenAfter.range[1] ], finalText);
 	}
-
 	return fixer.replaceText(node, finalText);
 }
 
@@ -483,7 +477,6 @@ function hasCanonicalMultilineImportIndent(sourceCode: SourceCode, node: ImportD
 	const baseIndent  = getLineIndent(node, sourceCode);
 	const childIndent = getChildIndent(baseIndent);
 	const lines       = current.replace(/;\s*$/, '').split('\n');
-
 	if (lines.length < 3) {
 		return true;
 	}
@@ -552,7 +545,6 @@ function packSpecifierLines(specifiers: string[], maxLen: number, baseIndent: st
 	if (bucket.length > 0) {
 		lines.push(renderLine(lineStart, bucket, false));
 	}
-
 	return lines;
 }
 
@@ -562,7 +554,6 @@ function buildWrappedImportText(sourceCode: SourceCode, node: ImportDeclaration,
 	const specifiers     = getNamedSpecifierTexts(sourceCode, node);
 	const fromClause     = `} from ${sourceCode.getText(node.source)}`;
 	const specifierLines = packSpecifierLines(specifiers, maxLen, baseIndent);
-
 	if (specifierLines.length === 0) {
 		return `${prefix}{ } from ${sourceCode.getText(node.source)}`;
 	}

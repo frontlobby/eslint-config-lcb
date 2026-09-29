@@ -75,7 +75,6 @@ export class AssignAlignment extends BaseESLintRule {
 			const text           = this.sourceCode.getText(childNode);
 			const equalsPos      = indexOfEquals(childNode as AlignableAssignment, text);
 			const indexOfNewline = text.indexOf('\n');
-
 			if (equalsPos === -1 || (indexOfNewline !== -1 && equalsPos >= indexOfNewline)) {
 				return;
 			}
@@ -114,7 +113,6 @@ export class AssignAlignment extends BaseESLintRule {
 		if (index - 1 >= 0 && node.body[index - 1]!.loc!.end.line >= childNode.loc!.start.line) {
 			return false;
 		}
-
 		return this.sourceCode.getCommentsBefore(childNode).every(comment => comment.loc!.end.line !== childNode.loc!.start.line);
 	}
 
@@ -168,7 +166,6 @@ export class AssignAlignment extends BaseESLintRule {
 			block.forEach(blockNode => {
 				const currentEqualsPos = indexOfEquals(blockNode, this.sourceCode.getText(blockNode)) + blockNode.loc!.start.column;
 				const numSpacesNeeded  = equalsPosition - currentEqualsPos;
-
 				if (numSpacesNeeded === 0) {
 					return;
 				}
@@ -200,11 +197,9 @@ export class AssignAlignment extends BaseESLintRule {
 
 	getAssignmentSpacingFix(blockNode: AlignableAssignment, numSpacesNeeded: number, fixer: Rule.RuleFixer): Rule.Fix {
 		const tokenBeforeEquals = this.getTokenBeforeEquals(blockNode);
-
 		if (numSpacesNeeded > 0) {
 			return fixer.insertTextAfter(tokenBeforeEquals, [ ...new Array(numSpacesNeeded + 1) ].join(' '));
 		}
-
 		return fixer.removeRange([ tokenBeforeEquals.range![1]!, tokenBeforeEquals.range![1]! - numSpacesNeeded ]);
 	}
 
@@ -247,5 +242,6 @@ function indexOfEquals(node: AlignableAssignment, text: string): number {
 		}
 		return -1;
 	}
+
 	return text.indexOf('=');
 }

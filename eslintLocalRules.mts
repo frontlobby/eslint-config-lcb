@@ -11,6 +11,7 @@ import { ClassFieldsAlignment }               from './lib/rules/ClassFieldsAlign
 import { ClassMethodsNewline }                from './lib/rules/ClassMethodsNewline.mts';
 import { EnumValueAlignment }                 from './lib/rules/EnumValueAlignment.mts';
 import { ImportAlignment }                    from './lib/rules/ImportAlignment.mts';
+import { MultilineStatementPadding }          from './lib/rules/MultilineStatementPadding.mts';
 import { MultilineTernary }                   from './lib/rules/MultilineTernary.mts';
 import { PreferSmallTernary }                 from './lib/rules/PreferSmallTernary.mts';
 import { PreferUnescapedQuotes }              from './lib/rules/PreferUnescapedQuotes.mts';
@@ -23,6 +24,7 @@ export const localRules: Record<string, Rule.RuleModule> = {
 	'align-enum-values'                      : EnumValueAlignment.toEslintRule(),
 	'align-imports'                          : ImportAlignment.toEslintRule(),
 	'class-methods-newline'                  : ClassMethodsNewline.toEslintRule(),
+	'multiline-statement-padding'            : MultilineStatementPadding.toEslintRule(),
 	'multiline-ternary'                      : MultilineTernary.toEslintRule(),
 	'prefer-small-ternary'                   : PreferSmallTernary.toEslintRule(),
 	'prefer-unescaped-quotes'                : PreferUnescapedQuotes.toEslintRule(),

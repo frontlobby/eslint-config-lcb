@@ -105,11 +105,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
         if (gap === collapsedGap) {
             return;
         }
-        this.context.report({
-            node,
-            message,
-            fix: fixer => fixer.replaceTextRange(gapRange, collapsedGap),
-        });
+        this.context.report({ node, message, fix: fixer => fixer.replaceTextRange(gapRange, collapsedGap) });
     }
     checkFinalMemberGap(finalMember, classBody) {
         const blankLineCount = getBlankLineCountAfterMember(finalMember, classBody, this.sourceCode);

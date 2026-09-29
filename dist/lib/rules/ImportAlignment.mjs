@@ -96,10 +96,7 @@ export class ImportAlignment extends BaseESLintRule {
                 const line = surroundingLines.find(surroundingLine => surroundingLine.node === importNode);
                 const { alignmentColumn, groupLines } = importAlignment.getAlignmentInfo(line, surroundingLines);
                 const shouldCollapse = importAlignment.shouldCollapseExtraSpaces(groupLines);
-                const lineDiffs = groupLines.map(groupLine => ({
-                    diff: alignmentColumn - groupLine.fromTokenStart,
-                    line: groupLine,
-                }));
+                const lineDiffs = groupLines.map(groupLine => ({ diff: alignmentColumn - groupLine.fromTokenStart, line: groupLine }));
                 if (importAlignment.shouldReportGroupedDiff(lineDiffs, shouldCollapse)) {
                     const lineDiff = lineDiffs.find(({ diff }) => diff < 0);
                     if (lineDiff && lineDiff.line.node === importNode) {

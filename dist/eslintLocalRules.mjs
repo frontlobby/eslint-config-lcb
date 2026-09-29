@@ -3,6 +3,7 @@ import { ClassFieldsAlignment } from "./lib/rules/ClassFieldsAlignment.mjs";
 import { ClassMethodsNewline } from "./lib/rules/ClassMethodsNewline.mjs";
 import { EnumValueAlignment } from "./lib/rules/EnumValueAlignment.mjs";
 import { ImportAlignment } from "./lib/rules/ImportAlignment.mjs";
+import { MultilineStatementPadding } from "./lib/rules/MultilineStatementPadding.mjs";
 import { MultilineTernary } from "./lib/rules/MultilineTernary.mjs";
 import { PreferSmallTernary } from "./lib/rules/PreferSmallTernary.mjs";
 import { PreferUnescapedQuotes } from "./lib/rules/PreferUnescapedQuotes.mjs";
@@ -14,6 +15,7 @@ export const localRules = {
     'align-enum-values': EnumValueAlignment.toEslintRule(),
     'align-imports': ImportAlignment.toEslintRule(),
     'class-methods-newline': ClassMethodsNewline.toEslintRule(),
+    'multiline-statement-padding': MultilineStatementPadding.toEslintRule(),
     'multiline-ternary': MultilineTernary.toEslintRule(),
     'prefer-small-ternary': PreferSmallTernary.toEslintRule(),
     'prefer-unescaped-quotes': PreferUnescapedQuotes.toEslintRule(),

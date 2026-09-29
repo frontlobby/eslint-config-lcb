@@ -19,7 +19,6 @@ export class BaseESLintRule {
 		if (this === BaseESLintRule) {
 			throw new TypeError('BaseESLintRule cannot be exported directly');
 		}
-
 		return { meta : this.meta, create : this.create };
 	}
 
