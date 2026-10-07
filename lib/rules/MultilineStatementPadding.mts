@@ -14,6 +14,7 @@ type DecoratedNode = Node & { decorators?: Node[]; declaration?: { decorators?: 
 
 interface Options {
 	minLines?: number;
+	largeLines?: number;
 	shortLineLength?: number;
 	shortIfLineLength?: number;
 }
@@ -26,7 +27,8 @@ interface Options {
  * A missing blank line is allowed when the line before or after the gap is no longer than
  * `shortLineLength` (default 10), such as `});` or an opening line like `if (fbq) {`. An `if` line is
  * allowed `shortIfLineLength` (default 15), since its condition costs characters the reader does not see
- * as length.
+ * as length. That allowance lapses between two statements of `largeLines` (default 6) or more, which take
+ * their blank line however short the lines joining them are.
  *
  * Comments on the last line of the previous statement stay with it; any other comments in the gap
  * stay with the next statement, so a missing blank line is inserted above them.
@@ -46,6 +48,7 @@ export class MultilineStatementPadding extends BaseESLintRule {
 				type       : 'object',
 				properties : {
 					minLines          : { type : 'integer', minimum : 2 },
+					largeLines        : { type : 'integer', minimum : 2 },
 					shortLineLength   : { type : 'integer', minimum : 0 },
 					shortIfLineLength : { type : 'integer', minimum : 0 },
 				},
@@ -57,6 +60,7 @@ export class MultilineStatementPadding extends BaseESLintRule {
 	context: Rule.RuleContext;
 	sourceCode: SourceCode;
 	minLines: number;
+	largeLines: number;
 	shortLineLength: number;
 	shortIfLineLength: number;
 	maxGuardLines = 3;
@@ -68,6 +72,7 @@ export class MultilineStatementPadding extends BaseESLintRule {
 		this.context           = context;
 		this.sourceCode        = getSourceCode(context);
 		this.minLines          = options?.minLines ?? 3;
+		this.largeLines        = options?.largeLines ?? 6;
 		this.shortLineLength   = options?.shortLineLength ?? 10;
 		this.shortIfLineLength = options?.shortIfLineLength ?? 15;
 	}
@@ -114,6 +119,11 @@ export class MultilineStatementPadding extends BaseESLintRule {
 
 	isMultiline(statement: Node): boolean {
 		return statement.loc!.end.line - statement.loc!.start.line + 1 >= this.minLines;
+	}
+
+	/** Long enough to read as a block of its own rather than as a step in whatever surrounds it. */
+	isLarge(statement: Node): boolean {
+		return statement.loc!.end.line - statement.loc!.start.line + 1 >= this.largeLines;
 	}
 
 	/**
@@ -169,9 +179,14 @@ export class MultilineStatementPadding extends BaseESLintRule {
 		// A blank line comes out where the two statements read as one thought rather than two: a guard and the
 		// single-line statement it tests or the return it protects, or a short line opening a block beneath
 		// another short line. A return that spans lines is a statement in its own right and keeps its blank line.
+		// Two large statements butted together are the densest thing in a file, so a short line opening the one
+		// below no longer stands in for the blank line between them: `]);` against `return {` reads as two
+		// blocks, not as one thought. Smaller neighbours, such as a short object above an `if`, still pass.
+		const bothLarge = this.isLarge(previous) && this.isLarge(current);
+
 		const blankLineUnwanted = isGuardBeforeReturn
 			? isSingleLine(current)
-			: isGuardAfterSetup || previousBreaks && this.isShortBlockOpening(nextLine);
+			: isGuardAfterSetup || previousBreaks && this.isShortBlockOpening(nextLine) && !bothLarge;
 
 		if (blankLineUnwanted) {
 			const paddedSegments = segments.filter((_segment, index) => blankCounts[index]! > 0);

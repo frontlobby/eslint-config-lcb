@@ -116,6 +116,24 @@ ruleTester.run('multiline-statement-padding', MultilineStatementPadding.toEslint
 			const b = 2;
 		`, { options : [ { minLines : 4 } ] }),
 
+		namedCase('accepts two large statements already parted by a blank line', `
+			async function load() {
+				const [ first, second ] = await Promise.all([
+					loadFirst(),
+					loadSecond(),
+					loadThird(),
+					loadFourth(),
+				]);
+
+				return {
+					first,
+					second,
+					third  : 3,
+					fourth : 4,
+				};
+			}
+		`),
+
 		namedCase('accepts a short opening line with no blank line above it', `
 			const config = {
 				a : 1,
@@ -242,6 +260,43 @@ ruleTester.run('multiline-statement-padding', MultilineStatementPadding.toEslint
 	],
 
 	invalid : [
+		namedCase('parts two large statements joined by a short closing line', {
+			code : `
+				async function load() {
+					const [ first, second ] = await Promise.all([
+						loadFirst(),
+						loadSecond(),
+						loadThird(),
+						loadFourth(),
+					]);
+					return {
+						first,
+						second,
+						third  : 3,
+						fourth : 4,
+					};
+				}
+			`,
+			output : `
+				async function load() {
+					const [ first, second ] = await Promise.all([
+						loadFirst(),
+						loadSecond(),
+						loadThird(),
+						loadFourth(),
+					]);
+
+					return {
+						first,
+						second,
+						third  : 3,
+						fourth : 4,
+					};
+				}
+			`,
+			errors : [ { message } ],
+		}),
+
 		namedCase('removes a blank line above a short opening line', {
 			code : `
 				const config = {
