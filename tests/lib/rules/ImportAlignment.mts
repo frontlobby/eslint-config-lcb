@@ -48,6 +48,14 @@ ruleTester.run('align-imports', ImportAlignment.toEslintRule(), trimCodeWhitespa
 		namedCase('accepts a long named import when maxLen is not set', `
 			import { alpha, beta, gamma, delta, epsilon, zeta, eta, theta } from 'some/module';
 		`),
+
+		namedCase('leaves an import with a comment before from as written', `
+			import foo    from 'foo';
+			import barbaz from 'bar';
+			import b /* c */   from 'b';
+			import x  from 'x';
+			import yy from 'y';
+		`),
 	],
 
 	invalid : [
@@ -169,6 +177,25 @@ ruleTester.run('align-imports', ImportAlignment.toEslintRule(), trimCodeWhitespa
 			errors  : [ { message : 'Unaligned import statement' }, { message : 'Unaligned import statement' } ],
 		}),
 
+		namedCase('collapses the neighbours of an import with a comment before from, leaving it as written', {
+			code    : `
+				import foo    from 'foo';
+				import barbaz   from 'bar';
+				import b /* c */   from 'b';
+				import x    from 'x';
+				import yy from 'y';
+			`,
+			output  : `
+				import foo    from 'foo';
+				import barbaz from 'bar';
+				import b /* c */   from 'b';
+				import x  from 'x';
+				import yy from 'y';
+			`,
+			options : [ { collapseExtraSpaces : true } ],
+			errors  : [ { message : 'Unaligned import statement' }, { message : 'Unaligned import statement' } ],
+		}),
+
 		namedCase('scenario 1', {
 			code    : `
 				import { Country, CountryLabels, CountryRegions, getRegionLabel } from '$/lib/Address';
@@ -255,6 +282,26 @@ ruleTester.run('align-imports maxLen', ImportAlignment.toEslintRule(), {
 			code    : 'import { aaaaaaaaaaaaaaaaaaaaa } from \'x\';',
 			options : [ { maxLen : 40, maxLenBuffer : 5 } ],
 		}),
+
+		namedCase('leaves a long import alone when a comment sits inside its braces', {
+			code    : 'import { a, /* c */ b, cccccccc } from \'a\';',
+			options : [ { maxLen : 30 } ],
+		}),
+
+		namedCase('leaves a multiline import that would fit alone when a comment sits inside its braces', {
+			code    : 'import {\n\ta, // c\n\tb\n} from \'a\';',
+			options : [ { maxLen : 80 } ],
+		}),
+
+		namedCase('leaves a long import alone when a comment sits between its braces and its source', {
+			code    : 'import { alpha, beta, gamma } /* c */ from \'a\';',
+			options : [ { maxLen : 30 } ],
+		}),
+
+		namedCase('leaves a long import alone when a comment follows its source', {
+			code    : 'import { alpha, beta, gamma } from \'a\' /* c */;',
+			options : [ { maxLen : 30 } ],
+		}),
 	],
 
 	invalid : [
@@ -326,6 +373,13 @@ ruleTester.run('align-imports maxLen', ImportAlignment.toEslintRule(), {
 			output  : 'import { A, B } from \'foo\';',
 			options : [ { maxLen : 40, maxLenBuffer : 5 } ],
 			errors  : [ { message : 'Import statement should be on a single line when it fits within the line limit' } ],
+		}),
+
+		namedCase('wraps a long import next to one left alone for the comment inside its braces', {
+			code    : 'import { a, /* c */ b, cccccccc } from \'a\';\nimport { dddddddd, eeeeeeee } from \'b\';',
+			output  : 'import { a, /* c */ b, cccccccc } from \'a\';\nimport {\n\tdddddddd, eeeeeeee\n} from \'b\';',
+			options : [ { maxLen : 30 } ],
+			errors  : [ { message : 'Import statement exceeds maximum line length' } ],
 		}),
 	],
 });

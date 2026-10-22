@@ -1,5 +1,5 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode, isSingleLine } from "../utils.mjs";
+import { hasCommentsInRange, isSingleLine } from "../utils.mjs";
 const message = 'Prefer a ternary expression when the if/else fits within maxLen';
 /**
  * Prefer ternary expressions for small if/else return and assignment patterns.
@@ -27,13 +27,9 @@ export class PreferSmallTernary extends BaseESLintRule {
             },
         ],
     };
-    context;
-    sourceCode;
     maxLen;
     constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
+        super(context);
         this.maxLen = context.options[0].maxLen;
     }
     static create(context) {
@@ -93,7 +89,7 @@ export class PreferSmallTernary extends BaseESLintRule {
         this.reportReplacement(node, range, replacement);
     }
     reportReplacement(node, range, replacement) {
-        if (!isCleanSpan(range[0], range[1], this.sourceCode)) {
+        if (hasCommentsInRange(this.sourceCode, range[0], range[1])) {
             return;
         }
         const lineLength = getReplacementLineLength(node.loc.start.line, node.loc.start.column, replacement, this.sourceCode);
@@ -152,7 +148,7 @@ function isEligibleBranch(test, consequentBranch, alternateBranch, sourceCode) {
     if (isNestedTernary(consequentBranch.value) || isNestedTernary(alternateBranch.value)) {
         return false;
     }
-    return isCleanSpan(test.range[0], alternateBranch.value.range[1], sourceCode);
+    return !hasCommentsInRange(sourceCode, test.range[0], alternateBranch.value.range[1]);
 }
 function isNestedTernary(node) {
     return node.type === 'ConditionalExpression';
@@ -173,9 +169,6 @@ function getReplacementLineLength(startLine, startColumn, replacement, sourceCod
 }
 function getSiblingIndex(block, node) {
     return block.body.findIndex(statement => statement === node);
-}
-function isCleanSpan(start, end, sourceCode) {
-    return sourceCode.getAllComments().every(comment => comment.range[1] <= start || comment.range[0] >= end);
 }
 function isElseIfBranch(node) {
     return node.parent.type === 'IfStatement' && node.parent.alternate === node;

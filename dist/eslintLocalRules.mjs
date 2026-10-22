@@ -3,11 +3,13 @@ import { ClassFieldsAlignment } from "./lib/rules/ClassFieldsAlignment.mjs";
 import { ClassMethodsNewline } from "./lib/rules/ClassMethodsNewline.mjs";
 import { EnumValueAlignment } from "./lib/rules/EnumValueAlignment.mjs";
 import { ImportAlignment } from "./lib/rules/ImportAlignment.mjs";
+import { InterfaceLayout } from "./lib/rules/InterfaceLayout.mjs";
 import { MultilineStatementPadding } from "./lib/rules/MultilineStatementPadding.mjs";
 import { MultilineTernary } from "./lib/rules/MultilineTernary.mjs";
 import { PreferSmallTernary } from "./lib/rules/PreferSmallTernary.mjs";
 import { PreferUnescapedQuotes } from "./lib/rules/PreferUnescapedQuotes.mjs";
 import { SingleLineJsonObject } from "./lib/rules/SingleLineJsonObject.mjs";
+import { TypeAnnotationSpacing } from "./lib/rules/TypeAnnotationSpacing.mjs";
 import { VueFacingDecoratorPropRequirements } from "./lib/rules/VueFacingDecoratorPropRequirements.mjs";
 export const localRules = {
     'align-assign': AssignAlignment.toEslintRule(),
@@ -15,10 +17,12 @@ export const localRules = {
     'align-enum-values': EnumValueAlignment.toEslintRule(),
     'align-imports': ImportAlignment.toEslintRule(),
     'class-methods-newline': ClassMethodsNewline.toEslintRule(),
+    'interface-layout': InterfaceLayout.toEslintRule(),
     'multiline-statement-padding': MultilineStatementPadding.toEslintRule(),
     'multiline-ternary': MultilineTernary.toEslintRule(),
     'prefer-small-ternary': PreferSmallTernary.toEslintRule(),
     'prefer-unescaped-quotes': PreferUnescapedQuotes.toEslintRule(),
     'single-line-json-object': SingleLineJsonObject.toEslintRule(),
+    'type-annotation-spacing': TypeAnnotationSpacing.toEslintRule(),
     'vue-facing-decorator-prop-requirements': VueFacingDecoratorPropRequirements.toEslintRule(),
 };

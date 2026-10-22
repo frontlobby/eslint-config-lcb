@@ -1,5 +1,5 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode, hasPropsWithValues } from "../utils.mjs";
+import { hasPropsWithValues } from "../utils.mjs";
 const messageAlign = 'Assignments should be aligned';
 /**
  * Align assignment statements on their equals signs.
@@ -25,13 +25,9 @@ export class AssignAlignment extends BaseESLintRule {
             },
         ],
     };
-    context;
-    sourceCode;
     options;
     constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
+        super(context);
         this.options = Object.assign({ maxSpaces: 25 }, context.options[0]);
     }
     static create(context) {
@@ -61,6 +57,13 @@ export class AssignAlignment extends BaseESLintRule {
             const equalsPos = indexOfEquals(childNode, text);
             const indexOfNewline = text.indexOf('\n');
             if (equalsPos === -1 || (indexOfNewline !== -1 && equalsPos >= indexOfNewline)) {
+                return;
+            }
+            // The fix shifts the text between the token before the operator and the operator, so a statement with anything but
+            // spaces or tabs there, such as a comment, is left as written. So is one whose `=` was found before that token.
+            const gapStart = this.getTokenBeforeEquals(childNode).range[1] - childNode.range[0];
+            const operatorStart = equalsPos + 1 - this.getAssignmentEqualsInfo(childNode).operatorLength;
+            if (operatorStart < gapStart || !/^[ \t]*$/.test(text.slice(gapStart, operatorStart))) {
                 return;
             }
             if (blockEnd !== null && childNode.loc.start.line === blockEnd + 1) {

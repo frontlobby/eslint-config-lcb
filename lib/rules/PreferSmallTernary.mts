@@ -1,8 +1,8 @@
 import type { Rule, SourceCode } from 'eslint';
 import type { AssignmentExpression, BlockStatement, ConditionalExpression, Expression, IfStatement, Node, Pattern, Statement } from 'estree';
 
-import { BaseESLintRule }              from '../BaseESLintRule.mts';
-import { getSourceCode, isSingleLine } from '../utils.mts';
+import { BaseESLintRule }                   from '../BaseESLintRule.mts';
+import { hasCommentsInRange, isSingleLine } from '../utils.mts';
 
 const message = 'Prefer a ternary expression when the if/else fits within maxLen';
 
@@ -34,15 +34,11 @@ export class PreferSmallTernary extends BaseESLintRule {
 		],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	maxLen: number;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
-		this.maxLen     = (context.options[0] as PreferSmallTernaryOptions).maxLen;
+		super(context);
+		this.maxLen = (context.options[0] as PreferSmallTernaryOptions).maxLen;
 	}
 
 	static create(context: Rule.RuleContext): Rule.RuleListener {
@@ -118,7 +114,7 @@ export class PreferSmallTernary extends BaseESLintRule {
 	}
 
 	reportReplacement(node: IfStatement, range: [number, number], replacement: string): void {
-		if (!isCleanSpan(range[0], range[1], this.sourceCode)) {
+		if (hasCommentsInRange(this.sourceCode, range[0], range[1])) {
 			return;
 		}
 
@@ -133,22 +129,22 @@ export class PreferSmallTernary extends BaseESLintRule {
 }
 
 interface PreferSmallTernaryOptions {
-	maxLen: number;
+	maxLen : number;
 }
 
 interface ReturnBranch {
-	type: 'return';
-	value: Expression;
+	type  : 'return';
+	value : Expression;
 }
 
 interface AssignBranch {
-	type: 'assign';
-	left: Pattern;
-	value: Expression;
+	type  : 'assign';
+	left  : Pattern;
+	value : Expression;
 }
 
 interface IfStatementWithParent extends IfStatement {
-	parent: Node;
+	parent : Node;
 }
 
 type BranchAction = ReturnBranch | AssignBranch;
@@ -217,7 +213,7 @@ function isEligibleBranch(test: Expression, consequentBranch: BranchAction, alte
 	if (isNestedTernary(consequentBranch.value) || isNestedTernary(alternateBranch.value)) {
 		return false;
 	}
-	return isCleanSpan(test.range![0], alternateBranch.value.range![1], sourceCode);
+	return !hasCommentsInRange(sourceCode, test.range![0], alternateBranch.value.range![1]);
 }
 
 function isNestedTernary(node: Expression): node is ConditionalExpression {
@@ -243,10 +239,6 @@ function getReplacementLineLength(startLine: number, startColumn: number, replac
 
 function getSiblingIndex(block: BlockStatement, node: IfStatement): number {
 	return block.body.findIndex(statement => statement === node);
-}
-
-function isCleanSpan(start: number, end: number, sourceCode: SourceCode): boolean {
-	return sourceCode.getAllComments().every(comment => comment.range![1]! <= start || comment.range![0]! >= end);
 }
 
 function isElseIfBranch(node: IfStatementWithParent): boolean {

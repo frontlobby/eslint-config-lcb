@@ -1,11 +1,19 @@
-import type { Rule } from 'eslint';
+import type { Rule, SourceCode } from 'eslint';
+
+import { getSourceCode } from './utils.mts';
 
 /**
  * Base class for all ESLint rules.
  */
 export class BaseESLintRule {
 
-	constructor(..._args: unknown[]) {}
+	readonly context: Rule.RuleContext;
+	readonly sourceCode: SourceCode;
+
+	constructor(context: Rule.RuleContext) {
+		this.context    = context;
+		this.sourceCode = getSourceCode(context);
+	}
 
 	static get meta(): Rule.RuleModule['meta'] {
 		throw new TypeError(`${this.name} must implement static meta`);

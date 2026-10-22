@@ -1,25 +1,13 @@
 import _ from 'lodash';
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getChildIndent, getLine, getLineIndent, getSourceCode, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from "../utils.mjs";
+import { getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, hasCommentsInRange, isSingleLine, maxLenSchema } from "../utils.mjs";
 const defaultMaxLen = 100;
 const splitMessage = 'Ternary should be split over multiple lines when it exceeds the line limit';
 const collapseMessage = 'Ternary should be on a single line when it fits within the line limit';
 /**
  * Collapse or expand ternary expressions based on line length.
  *
- * ## `maxLen` / `maxLenBuffer`
- *
- * Single-line ternary expressions are split across multiple lines when the
- * containing line exceeds `maxLen`. Multiline ternaries may be collapsed back to
- * one line when the resulting line fits within the limit.
- *
- * `maxLenBuffer` adds hysteresis on both sides of `maxLen`:
- *
- * - **Split** when line length `> maxLen + maxLenBuffer`
- * - **Collapse** when collapsed line length `<= maxLen - maxLenBuffer`
- *
- * Default `maxLenBuffer` is `5`. Set to `0` to split above `maxLen` and collapse
- * at or below `maxLen` (legacy behavior).
+ * `maxLen` and `maxLenBuffer` work as described on getWrapMaxLen in `lib/utils.mts`.
  */
 export class MultilineTernary extends BaseESLintRule {
     static meta = {
@@ -33,27 +21,14 @@ export class MultilineTernary extends BaseESLintRule {
         schema: [
             {
                 type: 'object',
-                properties: {
-                    maxLen: {
-                        type: 'integer',
-                        minimum: 1,
-                    },
-                    maxLenBuffer: {
-                        type: 'integer',
-                        minimum: 0,
-                    },
-                },
+                properties: { ...maxLenSchema },
                 additionalProperties: false,
             },
         ],
     };
-    context;
-    sourceCode;
     options;
     constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
+        super(context);
         this.options = Object.assign({
             maxLen: defaultMaxLen,
             maxLenBuffer: 5,
@@ -79,7 +54,7 @@ export class MultilineTernary extends BaseESLintRule {
     }
     checkSingleLineTernary(node) {
         const line = getLine(node, this.sourceCode);
-        if (line.length <= this.getWrapMaxLen()) {
+        if (line.length <= getWrapMaxLen(this.options)) {
             return;
         }
         this.context.report({
@@ -91,18 +66,10 @@ export class MultilineTernary extends BaseESLintRule {
     checkMultiLineTernary(node) {
         const replacement = getSingleLineTernaryText(node, this.sourceCode);
         const line = getReplacementLine(node, replacement, this.sourceCode);
-        if (line.length > this.getUnwrapMaxLen()) {
+        if (line.length > getUnwrapMaxLen(this.options)) {
             return;
         }
         this.context.report({ node, message: collapseMessage, fix: fixer => fixer.replaceText(node, replacement) });
-    }
-    getWrapMaxLen() {
-        const { maxLen, maxLenBuffer } = this.options;
-        return getWrapMaxLen(maxLen, maxLenBuffer);
-    }
-    getUnwrapMaxLen() {
-        const { maxLen, maxLenBuffer } = this.options;
-        return getUnwrapMaxLen(maxLen, maxLenBuffer);
     }
 }
 function isEligibleTernary(node, sourceCode) {
@@ -114,7 +81,7 @@ function isEligibleTernary(node, sourceCode) {
         || !isCollapsibleOperand(node.alternate, sourceCode)) {
         return false;
     }
-    return isCleanSpan(node.range[0], node.range[1], sourceCode);
+    return !hasCommentsInRange(sourceCode, node.range[0], node.range[1]);
 }
 function isCollapsibleOperand(node, sourceCode) {
     return isSingleLine(node)
@@ -178,12 +145,4 @@ function getMultiLineTernaryText(node, sourceCode) {
     const trueText = sourceCode.getText(node.consequent);
     const falseText = sourceCode.getText(node.alternate);
     return `${testText}\n${operatorIndent}? ${trueText}\n${operatorIndent}: ${falseText}`;
-}
-function getReplacementLine(node, replacement, sourceCode) {
-    const firstLine = sourceCode.lines[node.loc.start.line - 1];
-    const lastLine = sourceCode.lines[node.loc.end.line - 1];
-    return firstLine.slice(0, node.loc.start.column) + replacement + lastLine.slice(node.loc.end.column);
-}
-function isCleanSpan(start, end, sourceCode) {
-    return sourceCode.getAllComments().every(comment => comment.range[1] <= start || comment.range[0] >= end);
 }

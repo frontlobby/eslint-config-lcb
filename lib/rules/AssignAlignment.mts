@@ -1,8 +1,8 @@
-import type { Rule, SourceCode } from 'eslint';
+import type { Rule } from 'eslint';
 import type { AssignmentExpression, BlockStatement, ExpressionStatement, Node, Program, VariableDeclaration } from 'estree';
 
-import { BaseESLintRule }                    from '../BaseESLintRule.mts';
-import { getSourceCode, hasPropsWithValues } from '../utils.mts';
+import { BaseESLintRule }     from '../BaseESLintRule.mts';
+import { hasPropsWithValues } from '../utils.mts';
 
 const messageAlign = 'Assignments should be aligned';
 
@@ -32,15 +32,11 @@ export class AssignAlignment extends BaseESLintRule {
 		],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	options: ResolvedAlignAssignOptions;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
-		this.options    = Object.assign({ maxSpaces : 25 }, context.options[0] as AlignAssignOptions | undefined);
+		super(context);
+		this.options = Object.assign({ maxSpaces : 25 }, context.options[0] as AlignAssignOptions | undefined);
 	}
 
 	static create(context: Rule.RuleContext): Rule.RuleListener {
@@ -76,6 +72,14 @@ export class AssignAlignment extends BaseESLintRule {
 			const equalsPos      = indexOfEquals(childNode as AlignableAssignment, text);
 			const indexOfNewline = text.indexOf('\n');
 			if (equalsPos === -1 || (indexOfNewline !== -1 && equalsPos >= indexOfNewline)) {
+				return;
+			}
+
+			// The fix shifts the text between the token before the operator and the operator, so a statement with anything but
+			// spaces or tabs there, such as a comment, is left as written. So is one whose `=` was found before that token.
+			const gapStart      = this.getTokenBeforeEquals(childNode).range![1] - childNode.range![0];
+			const operatorStart = equalsPos + 1 - this.getAssignmentEqualsInfo(childNode).operatorLength;
+			if (operatorStart < gapStart || !/^[ \t]*$/.test(text.slice(gapStart, operatorStart))) {
 				return;
 			}
 
@@ -210,16 +214,16 @@ export class AssignAlignment extends BaseESLintRule {
 }
 
 interface AlignAssignOptions {
-	maxSpaces?: number;
+	maxSpaces? : number;
 }
 
 interface ResolvedAlignAssignOptions {
-	maxSpaces: number;
+	maxSpaces : number;
 }
 
 interface AssignmentEqualsInfo {
-	equalsPosition: number;
-	operatorLength: number;
+	equalsPosition : number;
+	operatorLength : number;
 }
 
 type AlignableParent = BlockStatement | Program;

@@ -15,18 +15,71 @@ export function isSingleLine(node) {
 export function getLine(node, sourceCode) {
     return sourceCode.lines[node.loc.start.line - 1];
 }
+/** The line `node` sits on with `replacement` in its place, from the start of its first line to the end of its last. */
+export function getReplacementLine(node, replacement, sourceCode) {
+    const firstLine = sourceCode.lines[node.loc.start.line - 1];
+    const lastLine = sourceCode.lines[node.loc.end.line - 1];
+    return firstLine.slice(0, node.loc.start.column) + replacement + lastLine.slice(node.loc.end.column);
+}
 export function getLineIndent(node, sourceCode) {
-    return getLine(node, sourceCode).match(/^\s*/)[0];
+    return getIndentOfLine(sourceCode, node.loc.start.line);
+}
+/** The leading whitespace of a line, numbered from 1. */
+export function getIndentOfLine(sourceCode, lineNumber) {
+    return sourceCode.lines[lineNumber - 1].match(/^\s*/)[0];
 }
 export function getChildIndent(baseIndent) {
     return `${baseIndent}\t`;
 }
-export function getWrapMaxLen(maxLen, maxLenBuffer) {
+/** `\r\n` when the file uses it anywhere, otherwise `\n`. */
+export function getLineEnding(sourceCode) {
+    return sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
+}
+/** The blank lines in a run of whitespace between two pieces of code: one fewer than its line breaks. */
+export function countBlankLines(whitespace) {
+    return Math.max(0, (whitespace.match(/\n/g)?.length ?? 0) - 1);
+}
+/** Whether any comment overlaps the text from `start` to `end`, even in part. */
+export function hasCommentsInRange(sourceCode, start, end) {
+    return sourceCode.getAllComments().some(comment => comment.range[1] > start && comment.range[0] < end);
+}
+/**
+ * The longest a line may be before a rule wraps it over several lines.
+ *
+ * Rules that wrap a construct whose line is too long, and unwrap it again once it fits, take a `maxLen` and a
+ * `maxLenBuffer`. The buffer adds hysteresis on both sides of `maxLen`, so a construct sitting just above the limit
+ * does not ping-pong between the two forms on successive lint passes:
+ *
+ * - **Wrap** when the single-line length is `> maxLen + maxLenBuffer`
+ * - **Unwrap** when the collapsed length is `<= maxLen - maxLenBuffer` (see getUnwrapMaxLen)
+ *
+ * Lengths between those thresholds are left unchanged. The rules default `maxLenBuffer` to `5`; set it to `0` to wrap
+ * above `maxLen` and unwrap at or below it.
+ *
+ * @example maxLen 140, maxLenBuffer 10
+ * - Single line 141 chars → stay single line (141 <= 150)
+ * - Single line 151 chars → wrap to multiline
+ * - Collapsed 138 chars → stay multiline (138 > 130)
+ * - Collapsed 129 chars → unwrap to single line (129 <= 130)
+ */
+export function getWrapMaxLen({ maxLen, maxLenBuffer }) {
     return maxLen + maxLenBuffer;
 }
-export function getUnwrapMaxLen(maxLen, maxLenBuffer) {
+/** The longest a collapsed line may be for a rule to unwrap it onto one line; see getWrapMaxLen. */
+export function getUnwrapMaxLen({ maxLen, maxLenBuffer }) {
     return Math.max(0, maxLen - maxLenBuffer);
 }
+/** Schemas for the `maxLen` and `maxLenBuffer` options that getWrapMaxLen and getUnwrapMaxLen read. */
+export const maxLenSchema = {
+    maxLen: {
+        type: 'integer',
+        minimum: 1,
+    },
+    maxLenBuffer: {
+        type: 'integer',
+        minimum: 0,
+    },
+};
 function isNodeAnIdentifierWithName(node, subNode, name) {
     return hasPropsWithValues(node, { [`${subNode}.type`]: 'Identifier', [`${subNode}.name`]: name });
 }

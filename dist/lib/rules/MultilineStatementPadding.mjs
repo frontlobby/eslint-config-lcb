@@ -1,5 +1,5 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode } from "../utils.mjs";
+import { countBlankLines, getLineEnding, isSingleLine } from "../utils.mjs";
 const ifStatementStart = /^if\s*\(/;
 const message = 'A multi-line statement should be separated from adjacent statements by exactly one blank line';
 const unwantedMessage = 'A statement that opens a block on a short line should not have a blank line above it';
@@ -39,18 +39,14 @@ export class MultilineStatementPadding extends BaseESLintRule {
             },
         ],
     };
-    context;
-    sourceCode;
     minLines;
     largeLines;
     shortLineLength;
     shortIfLineLength;
     maxGuardLines = 3;
     constructor(context) {
-        super();
+        super(context);
         const options = context.options[0];
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
         this.minLines = options?.minLines ?? 3;
         this.largeLines = options?.largeLines ?? 6;
         this.shortLineLength = options?.shortLineLength ?? 10;
@@ -127,7 +123,7 @@ export class MultilineStatementPadding extends BaseESLintRule {
         }
         const blankCounts = segments.map(([start, end]) => countBlankLines(this.sourceCode.text.slice(start, end)));
         const node = this.isMultiline(current) ? current : previous;
-        const lineEnding = this.sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
+        const lineEnding = getLineEnding(this.sourceCode);
         const nextLine = (gapComments[0] ?? current).loc.start.line;
         // The break comes from the line above: a `});` or a `}` has already parted the two statements, and a
         // short line below only counts on top of that, so a long line above always takes its blank line.
@@ -208,9 +204,6 @@ function isShortGuard(statement, maxGuardLines) {
     return statement.type === 'IfStatement'
         && statement.loc.end.line - statement.loc.start.line + 1 <= maxGuardLines;
 }
-function isSingleLine(statement) {
-    return statement.loc.start.line === statement.loc.end.line;
-}
 /**
  * Decorators written above an `export` sit outside the exported statement's own range, so a statement's text
  * starts at its first decorator rather than at `range[0]`. Reading the gap up to `range[0]` instead would put
@@ -231,7 +224,4 @@ function getWhitespaceSegments(start, end, comments) {
         segments.push([boundaries[index], boundaries[index + 1]]);
     }
     return segments;
-}
-function countBlankLines(whitespace) {
-    return Math.max(0, (whitespace.match(/\n/g)?.length ?? 0) - 1);
 }

@@ -3,7 +3,9 @@ import type { ConditionalExpression, Expression, Node } from 'estree';
 import _                         from 'lodash';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getChildIndent, getLine, getLineIndent, getSourceCode, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
+import {
+	getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, hasCommentsInRange, isSingleLine, maxLenSchema
+} from '../utils.mts';
 
 const defaultMaxLen = 100;
 
@@ -13,19 +15,7 @@ const collapseMessage = 'Ternary should be on a single line when it fits within 
 /**
  * Collapse or expand ternary expressions based on line length.
  *
- * ## `maxLen` / `maxLenBuffer`
- *
- * Single-line ternary expressions are split across multiple lines when the
- * containing line exceeds `maxLen`. Multiline ternaries may be collapsed back to
- * one line when the resulting line fits within the limit.
- *
- * `maxLenBuffer` adds hysteresis on both sides of `maxLen`:
- *
- * - **Split** when line length `> maxLen + maxLenBuffer`
- * - **Collapse** when collapsed line length `<= maxLen - maxLenBuffer`
- *
- * Default `maxLenBuffer` is `5`. Set to `0` to split above `maxLen` and collapse
- * at or below `maxLen` (legacy behavior).
+ * `maxLen` and `maxLenBuffer` work as described on getWrapMaxLen in `lib/utils.mts`.
  */
 export class MultilineTernary extends BaseESLintRule {
 
@@ -39,30 +29,17 @@ export class MultilineTernary extends BaseESLintRule {
 		fixable : 'whitespace',
 		schema  : [
 			{
-				type       : 'object',
-				properties : {
-					maxLen : {
-						type    : 'integer',
-						minimum : 1,
-					},
-					maxLenBuffer : {
-						type    : 'integer',
-						minimum : 0,
-					},
-				},
+				type                 : 'object',
+				properties           : { ...maxLenSchema },
 				additionalProperties : false,
 			},
 		],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	options: ResolvedMultilineTernaryOptions;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
+		super(context);
 
 		this.options = Object.assign({
 			maxLen       : defaultMaxLen,
@@ -95,7 +72,7 @@ export class MultilineTernary extends BaseESLintRule {
 
 	checkSingleLineTernary(node: ConditionalExpression): void {
 		const line = getLine(node, this.sourceCode);
-		if (line.length <= this.getWrapMaxLen()) {
+		if (line.length <= getWrapMaxLen(this.options)) {
 			return;
 		}
 
@@ -109,45 +86,28 @@ export class MultilineTernary extends BaseESLintRule {
 	checkMultiLineTernary(node: ConditionalExpression): void {
 		const replacement = getSingleLineTernaryText(node, this.sourceCode);
 		const line        = getReplacementLine(node, replacement, this.sourceCode);
-		if (line.length > this.getUnwrapMaxLen()) {
+		if (line.length > getUnwrapMaxLen(this.options)) {
 			return;
 		}
 
 		this.context.report({ node, message : collapseMessage, fix : fixer => fixer.replaceText(node, replacement) });
 	}
 
-	getWrapMaxLen(): number {
-		const { maxLen, maxLenBuffer } = this.options;
-
-		return getWrapMaxLen(maxLen, maxLenBuffer);
-	}
-
-	getUnwrapMaxLen(): number {
-		const { maxLen, maxLenBuffer } = this.options;
-
-		return getUnwrapMaxLen(maxLen, maxLenBuffer);
-	}
-
 }
 
 interface MultilineTernaryOptions {
 	/** Split single-line ternaries when the containing line exceeds this length. */
-	maxLen?: number;
-	/**
-	 * Characters subtracted from `maxLen` when deciding whether to collapse a
-	 * multiline ternary, and added when deciding whether to split. Default: `5`.
-	 * Use `0` to disable.
-	 */
-	maxLenBuffer?: number;
+	maxLen?       : number;
+	maxLenBuffer? : number;
 }
 
 interface ResolvedMultilineTernaryOptions {
-	maxLen: number;
-	maxLenBuffer: number;
+	maxLen       : number;
+	maxLenBuffer : number;
 }
 
 interface ConditionalExpressionWithParent extends ConditionalExpression {
-	parent: Node;
+	parent : Node;
 }
 
 function isEligibleTernary(node: ConditionalExpressionWithParent, sourceCode: SourceCode): boolean {
@@ -161,7 +121,7 @@ function isEligibleTernary(node: ConditionalExpressionWithParent, sourceCode: So
 		return false;
 	}
 
-	return isCleanSpan(node.range![0], node.range![1], sourceCode);
+	return !hasCommentsInRange(sourceCode, node.range![0], node.range![1]);
 }
 
 function isCollapsibleOperand(node: Expression, sourceCode: SourceCode): boolean {
@@ -233,15 +193,4 @@ function getMultiLineTernaryText(node: ConditionalExpression, sourceCode: Source
 	const falseText      = sourceCode.getText(node.alternate);
 
 	return `${testText}\n${operatorIndent}? ${trueText}\n${operatorIndent}: ${falseText}`;
-}
-
-function getReplacementLine(node: ConditionalExpression, replacement: string, sourceCode: SourceCode): string {
-	const firstLine = sourceCode.lines[node.loc!.start.line - 1]!;
-	const lastLine  = sourceCode.lines[node.loc!.end.line - 1]!;
-
-	return firstLine.slice(0, node.loc!.start.column) + replacement + lastLine.slice(node.loc!.end.column);
-}
-
-function isCleanSpan(start: number, end: number, sourceCode: SourceCode): boolean {
-	return sourceCode.getAllComments().every(comment => comment.range![1]! <= start || comment.range![0]! >= end);
 }

@@ -1,5 +1,5 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode } from "../utils.mjs";
+import { getIndentOfLine, getLineEnding, hasCommentsInRange } from "../utils.mjs";
 const memberMessage = 'Class methods should be separated by exactly one blank line';
 const closingBraceMessage = 'The final class method should be followed by exactly one blank line';
 const getterSetterMessage = 'A getter and its setter should not be separated by a blank line';
@@ -21,13 +21,6 @@ export class ClassMethodsNewline extends BaseESLintRule {
         fixable: 'whitespace',
         schema: [],
     };
-    context;
-    sourceCode;
-    constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
-    }
     static create(context) {
         const rule = new ClassMethodsNewline(context);
         return {
@@ -69,7 +62,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
             return;
         }
         const gapRange = [previousMember.range[1], getMemberStartRange(currentMember, this.sourceCode)];
-        const hasComments = this.sourceCode.getAllComments().some(comment => comment.range[0] >= gapRange[0] && comment.range[1] <= gapRange[1]);
+        const hasComments = hasCommentsInRange(this.sourceCode, ...gapRange);
         this.context.report({
             node: currentMember,
             message: memberMessage,
@@ -84,7 +77,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
             return;
         }
         const gapRange = [getter.range[1], getMemberStartRange(setter, this.sourceCode)];
-        const hasComments = this.sourceCode.getAllComments().some(comment => comment.range[0] >= gapRange[0] && comment.range[1] <= gapRange[1]);
+        const hasComments = hasCommentsInRange(this.sourceCode, ...gapRange);
         this.context.report({
             node: setter,
             message: getterSetterMessage,
@@ -113,7 +106,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
             return;
         }
         const gapRange = [finalMember.range[1], classBody.range[1] - 1];
-        const hasComments = this.sourceCode.getAllComments().some(comment => comment.range[0] >= gapRange[0] && comment.range[1] <= gapRange[1]);
+        const hasComments = hasCommentsInRange(this.sourceCode, ...gapRange);
         this.context.report({
             node: finalMember,
             message: closingBraceMessage,
@@ -138,14 +131,10 @@ function isGetterSetterPair(previousMember, currentMember, sourceCode) {
         && sourceCode.getText(getter.key) === sourceCode.getText(setter.key);
 }
 function hasCommentsBetweenMembers(previousMember, currentMember, sourceCode) {
-    return hasCommentsInRange(previousMember.range[1], getMemberStartRange(currentMember, sourceCode), sourceCode);
+    return hasCommentsInRange(sourceCode, previousMember.range[1], getMemberStartRange(currentMember, sourceCode));
 }
 function hasCommentsAfterMember(member, classBody, sourceCode) {
-    return hasCommentsInRange(member.range[1], classBody.range[1] - 1, sourceCode);
-}
-function hasCommentsInRange(start, end, sourceCode) {
-    return sourceCode.getAllComments().some(comment => comment.range[0] >= start
-        && comment.range[1] <= end);
+    return hasCommentsInRange(sourceCode, member.range[1], classBody.range[1] - 1);
 }
 function getBlankLineCount(previousMember, currentMember, sourceCode) {
     const firstGapLine = previousMember.loc.end.line;
@@ -162,18 +151,18 @@ function getBlankLineCountAfterMember(member, classBody, sourceCode) {
         .length;
 }
 function getRequiredGap(currentMember, sourceCode) {
-    const lineEnding = sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
-    const indent = sourceCode.lines[getMemberStartLine(currentMember, sourceCode) - 1].match(/^\s*/)?.[0] ?? '';
+    const lineEnding = getLineEnding(sourceCode);
+    const indent = getIndentOfLine(sourceCode, getMemberStartLine(currentMember, sourceCode));
     return `${lineEnding}${lineEnding}${indent}`;
 }
 function getDirectGap(currentMember, sourceCode) {
-    const lineEnding = sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
-    const indent = sourceCode.lines[getMemberStartLine(currentMember, sourceCode) - 1].match(/^\s*/)?.[0] ?? '';
+    const lineEnding = getLineEnding(sourceCode);
+    const indent = getIndentOfLine(sourceCode, getMemberStartLine(currentMember, sourceCode));
     return `${lineEnding}${indent}`;
 }
 function getRequiredGapBeforeClosingBrace(classBody, sourceCode) {
-    const lineEnding = sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
-    const indent = sourceCode.lines[classBody.loc.end.line - 1].match(/^\s*/)?.[0] ?? '';
+    const lineEnding = getLineEnding(sourceCode);
+    const indent = getIndentOfLine(sourceCode, classBody.loc.end.line);
     return `${lineEnding}${lineEnding}${indent}`;
 }
 function getMemberStartRange(member, sourceCode) {

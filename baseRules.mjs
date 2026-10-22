@@ -169,7 +169,8 @@ const rules = {
 	'@typescript-eslint/no-var-requires'             : 'error',
 	'@typescript-eslint/consistent-type-definitions' : [ 'error', 'interface' ],
 	'@typescript-eslint/prefer-namespace-keyword'    : 'error',
-	'@stylistic/type-annotation-spacing'             : 'error',
+	// Replaced by local-rules/type-annotation-spacing, which defers to local-rules/interface-layout on aligned interface fields
+	'@stylistic/type-annotation-spacing'             : 'off',
 	// Allow @ts-ignore since it's useful sometimes
 	'@typescript-eslint/ban-ts-comment'              : [ 'error', { 'ts-ignore' : 'allow-with-description' } ],
 	'@typescript-eslint/array-type'                  : [ 'error', { default : 'array' } ],
@@ -245,24 +246,29 @@ const rules = {
 		maxLen              : 140,  // +/- 5 buffer
 	} ],
 	'local-rules/class-methods-newline'                  : 'error',
+	'local-rules/interface-layout'                       : [ 'error', { maxLen : 130 } ],
 	'local-rules/multiline-statement-padding'            : 'error',
 	'local-rules/multiline-ternary'                      : 'off', // Re-enable once properly tuned [ 'error', { maxLen : 100 } ],
 	'local-rules/prefer-small-ternary'                   : [ 'warn', { maxLen : 130 } ], // Downgraded to warn until behavior is finalized
 	'local-rules/prefer-unescaped-quotes'                : 'error',
 	'local-rules/single-line-json-object'                : [ 'error', { maxLen : 130 } ],
+	'local-rules/type-annotation-spacing'                : 'error',
 	'local-rules/vue-facing-decorator-prop-requirements' : 'error',
 };
+
 const {
 	'local-rules/align-assign'                           : alignAssignRule,
 	'local-rules/align-class-fields'                     : alignClassFieldsRule,
 	'local-rules/align-enum-values'                      : alignEnumValuesRule,
 	'local-rules/align-imports'                          : alignImportsRule,
 	'local-rules/class-methods-newline'                  : classMethodsNewlineRule,
+	'local-rules/interface-layout'                       : interfaceLayoutRule,
 	'local-rules/multiline-statement-padding'            : multilineStatementPaddingRule,
 	'local-rules/multiline-ternary'                      : multilineTernaryRule,
 	'local-rules/prefer-small-ternary'                   : preferSmallTernaryRule,
 	'local-rules/prefer-unescaped-quotes'                : preferUnescapedQuotesRule,
 	'local-rules/single-line-json-object'                : singleLineJsonObjectRule,
+	'local-rules/type-annotation-spacing'                : typeAnnotationSpacingRule,
 	'local-rules/vue-facing-decorator-prop-requirements' : vueFacingDecoratorPropRequirementsRule,
 	...sharedRules
 } = rules;
@@ -295,11 +301,13 @@ export const config = [
 			'local-rules/align-enum-values'                      : alignEnumValuesRule,
 			'local-rules/align-imports'                          : alignImportsRule,
 			'local-rules/class-methods-newline'                  : classMethodsNewlineRule,
+			'local-rules/interface-layout'                       : interfaceLayoutRule,
 			'local-rules/multiline-statement-padding'            : multilineStatementPaddingRule,
 			'local-rules/multiline-ternary'                      : multilineTernaryRule,
 			'local-rules/prefer-small-ternary'                   : preferSmallTernaryRule,
 			'local-rules/prefer-unescaped-quotes'                : preferUnescapedQuotesRule,
 			'local-rules/single-line-json-object'                : singleLineJsonObjectRule,
+			'local-rules/type-annotation-spacing'                : typeAnnotationSpacingRule,
 			'local-rules/vue-facing-decorator-prop-requirements' : vueFacingDecoratorPropRequirementsRule,
 		},
 	},

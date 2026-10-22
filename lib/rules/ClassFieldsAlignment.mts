@@ -1,7 +1,9 @@
-import type { AST, Rule, SourceCode } from 'eslint';
+import type { Rule } from 'eslint';
+import _             from 'lodash';
 
+import { type AlignedLine, findAlignedToken, reportMisalignedRun, splitIntoRuns } from '../alignment.mts';
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getSourceCode }  from '../utils.mts';
+import { isSingleLine }   from '../utils.mts';
 
 const messageAlign = 'Class field initializers should be aligned';
 
@@ -30,15 +32,11 @@ export class ClassFieldsAlignment extends BaseESLintRule {
 		} ],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	options: ResolvedClassFieldsAlignmentOptions;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
-		this.options    = Object.assign({ maxSpaces : 25 }, context.options[0] as ClassFieldsAlignmentOptions | undefined);
+		super(context);
+		this.options = Object.assign({ maxSpaces : 25 }, context.options[0] as ClassFieldsAlignmentOptions | undefined);
 	}
 
 	static create(context: Rule.RuleContext): Rule.RuleListener {
@@ -53,138 +51,74 @@ export class ClassFieldsAlignment extends BaseESLintRule {
 
 	checkClassBody(node: ClassBody): void {
 		for (const block of this.buildAlignmentBlocks(node)) {
-			if (block.length < 2) {
-				continue;
-			}
-
-			const equalsColumn = Math.max(...block.map(field => field.tokenBeforeEquals.loc.end.column)) + 1;
-
-			for (const field of block) {
-				if (field.equalsToken.loc.start.column !== equalsColumn) {
-					this.reportUnalignedField(field, equalsColumn);
-				}
-			}
+			reportMisalignedRun(this.context, block, messageAlign);
 		}
 	}
 
+	/**
+	 * Fields on consecutive lines. Any other member ends a block, and so does a field whose padding before `=` would
+	 * differ from the previous field's by more than `maxSpaces`.
+	 */
 	buildAlignmentBlocks(node: ClassBody): ClassFieldLine[][] {
-		const blocks: ClassFieldLine[][]         = [];
-		let currentBlock: ClassFieldLine[]       = [];
-		let previousField: ClassFieldLine | null = null;
+		const fields = node.body.map(member => this.getClassFieldLine(member));
 
-		for (const member of node.body) {
-			const field = this.getClassFieldLine(member);
-
-			if (!field || !previousField || field.member.loc!.start.line !== previousField.member.loc!.end.line + 1) {
-				if (currentBlock.length > 0) {
-					blocks.push(currentBlock);
-				}
-
-				currentBlock = field ? [ field ] : [];
-			}
-			else if (this.isWithinMaxSpacing(field, previousField)) {
-				currentBlock.push(field);
-			}
-			else {
-				blocks.push(currentBlock);
-				currentBlock = [ field ];
-			}
-
-			previousField = field;
-		}
-
-		if (currentBlock.length > 0) {
-			blocks.push(currentBlock);
-		}
-		return blocks;
+		return splitIntoRuns(fields, (previousField, field) => previousField !== null
+			&& field !== null
+			&& field.member.loc.start.line === previousField.member.loc.end.line + 1
+			&& this.isWithinMaxSpacing(field, previousField))
+			.map(block => _.compact(block));
 	}
 
 	isWithinMaxSpacing(field: ClassFieldLine, previousField: ClassFieldLine): boolean {
-		const fieldColumn         = field.tokenBeforeEquals.loc.end.column;
-		const previousFieldColumn = previousField.tokenBeforeEquals.loc.end.column;
+		const fieldColumn         = field.tokenBefore.loc.end.column;
+		const previousFieldColumn = previousField.tokenBefore.loc.end.column;
 
 		return Math.abs(fieldColumn - previousFieldColumn) <= this.options.maxSpaces;
 	}
 
 	getClassFieldLine(member: ClassMember): ClassFieldLine | null {
-		if (member.type !== 'PropertyDefinition' || !member.key || !member.value || member.loc.start.line !== member.loc.end.line) {
+		if (member.type !== 'PropertyDefinition' || !member.key || !member.value || !isSingleLine(member)) {
 			return null;
 		}
 
-		const equalsToken = this.getEqualsToken(member);
-		if (!equalsToken) {
-			return null;
-		}
+		const alignedToken = findAlignedToken(this.sourceCode, member.key as unknown as Rule.Node, member.value.range[0]);
 
-		const tokenBeforeEquals = this.sourceCode.getTokenBefore(equalsToken)!;
-		const textBeforeEquals  = this.sourceCode.text.slice(tokenBeforeEquals.range[1], equalsToken.range[0]);
-
-		return /^[ \t]*$/.test(textBeforeEquals) ? { equalsToken, member, tokenBeforeEquals } : null;
-	}
-
-	getEqualsToken(member: ClassMember): AST.Token | null {
-		let token = this.sourceCode.getTokenAfter(member.key! as unknown as Rule.Node);
-
-		while (token && token.range[0] < member.value!.range![0]) {
-			if (token.value === '=') {
-				return token;
-			}
-
-			token = this.sourceCode.getTokenAfter(token);
-		}
-
-		return null;
-	}
-
-	reportUnalignedField(field: ClassFieldLine, equalsColumn: number): void {
-		this.context.report({
-			node    : field.member as unknown as Rule.Node,
-			loc     : field.equalsToken.loc.start,
-			message : messageAlign,
-			fix     : fixer => fixer.replaceTextRange(
-				[ field.tokenBeforeEquals.range[1], field.equalsToken.range[0] ],
-				' '.repeat(equalsColumn - field.tokenBeforeEquals.loc.end.column)
-			),
-		});
+		return alignedToken ? { ...alignedToken, member } : null;
 	}
 
 }
 
 interface ClassFieldsAlignmentOptions {
-	maxSpaces?: number;
+	maxSpaces? : number;
 }
 
 interface ResolvedClassFieldsAlignmentOptions {
-	maxSpaces: number;
+	maxSpaces : number;
 }
 
 interface ClassBody {
-	body: ClassMember[];
+	body : ClassMember[];
 }
 
 interface ClassMember {
-	type: string;
-	key?: ClassMemberNode;
-	value?: ClassMemberNode | null;
-	loc: SourceLocation;
+	type   : string;
+	key?   : ClassMemberNode;
+	value? : ClassMemberNode | null;
+	loc    : SourceLocation;
 }
 
 interface ClassMemberNode {
-	range: [ number, number ];
+	range : [ number, number ];
 }
 
 interface SourceLocation {
-	start: SourcePosition;
-	end: SourcePosition;
+	start : SourcePosition;
+	end   : SourcePosition;
 }
 
 interface SourcePosition {
-	line: number;
-	column: number;
+	line   : number;
+	column : number;
 }
 
-interface ClassFieldLine {
-	equalsToken: AST.Token;
-	member: ClassMember;
-	tokenBeforeEquals: AST.Token;
-}
+type ClassFieldLine = AlignedLine<ClassMember>;

@@ -3,7 +3,9 @@ import type { ImportDeclaration, ImportSpecifier } from 'estree';
 import _                              from 'lodash';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getChildIndent, getLine, getLineIndent, getSourceCode, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
+import {
+	getChildIndent, getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, hasCommentsInRange, isSingleLine, maxLenSchema
+} from '../utils.mts';
 
 const messageExceedsMaxLen = 'Import statement exceeds maximum line length';
 const messageShouldUnwrap  = 'Import statement should be on a single line when it fits within the line limit';
@@ -11,32 +13,8 @@ const messageShouldUnwrap  = 'Import statement should be on a single line when i
 /**
  * Align import statements.
  *
- * ## `maxLen` / `maxLenBuffer`
- *
- * When `maxLen` is set, named imports are wrapped onto multiple lines if a
- * single-line statement would exceed that length.
- *
- * Multiline imports may be collapsed back to one line when their collapsed
- * length fits within the limit. Without a buffer, imports sitting just above
- * `maxLen` can ping-pong: wrap (line too long) → unwrap (collapsed length still
- * fits) → wrap again on the next lint pass.
- *
- * `maxLenBuffer` adds hysteresis on both sides of `maxLen`:
- *
- * - **Wrap** when single-line length `> maxLen + maxLenBuffer`
- * - **Unwrap** when collapsed length `<= maxLen - maxLenBuffer`
- *
- * Lengths between those thresholds are left unchanged, which prevents
- * wrap/unwrap oscillation near the limit.
- *
- * Default `maxLenBuffer` is `5`. Set to `0` to wrap above `maxLen` and unwrap
- * at or below `maxLen` (legacy behavior).
- *
- * @example maxLen 140, maxLenBuffer 10
- * - Single line 141 chars → stay single line (141 <= 150)
- * - Single line 151 chars → wrap to multiline
- * - Collapsed 138 chars → stay multiline (138 > 130)
- * - Collapsed 129 chars → unwrap to single line (129 <= 130)
+ * When `maxLen` is set, long named imports are wrapped and multiline ones that fit are unwrapped, as described on
+ * getWrapMaxLen in `lib/utils.mts`.
  */
 export class ImportAlignment extends BaseESLintRule {
 
@@ -56,14 +34,7 @@ export class ImportAlignment extends BaseESLintRule {
 				minColumnWidth : {
 					type : 'number',
 				},
-				maxLen : {
-					type    : 'integer',
-					minimum : 1,
-				},
-				maxLenBuffer : {
-					type    : 'integer',
-					minimum : 0,
-				},
+				...maxLenSchema,
 				maxSpaces : {
 					type : 'number',
 				},
@@ -72,15 +43,11 @@ export class ImportAlignment extends BaseESLintRule {
 		} ],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	hasExplicitCollapseExtraSpaces: boolean;
 	options: ResolvedAlignImportsOptions;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context                        = context;
-		this.sourceCode                     = getSourceCode(context);
+		super(context);
 		this.hasExplicitCollapseExtraSpaces = Object.prototype.hasOwnProperty.call(context.options[0] || {}, 'collapseExtraSpaces');
 
 		this.options = Object.assign({
@@ -128,13 +95,13 @@ export class ImportAlignment extends BaseESLintRule {
 	}
 
 	checkMaxLen(node: ImportDeclaration): boolean {
-		const { maxLen } = this.options;
-		if (!maxLen || !node.specifiers.some(specifier => specifier.type === 'ImportSpecifier')) {
+		const { maxLen, maxLenBuffer } = this.options;
+		if (!maxLen || !node.specifiers.some(specifier => specifier.type === 'ImportSpecifier') || hasCommentInRebuiltText(this.sourceCode, node)) {
 			return false;
 		}
 
 		const sourceCode = this.sourceCode;
-		const wrapMaxLen = this.getWrapMaxLen();
+		const wrapMaxLen = getWrapMaxLen({ maxLen, maxLenBuffer });
 
 		if (isSingleLine(node)) {
 			if (getLine(node, sourceCode).length <= wrapMaxLen) {
@@ -149,7 +116,7 @@ export class ImportAlignment extends BaseESLintRule {
 			return true;
 		}
 
-		if (getCollapsedLineLength(sourceCode, node) <= this.getUnwrapMaxLen()) {
+		if (getCollapsedLineLength(sourceCode, node) <= getUnwrapMaxLen({ maxLen, maxLenBuffer })) {
 			this.context.report({
 				node,
 				message : messageShouldUnwrap,
@@ -191,18 +158,6 @@ export class ImportAlignment extends BaseESLintRule {
 		}
 
 		return false;
-	}
-
-	getWrapMaxLen(): number {
-		const { maxLen, maxLenBuffer } = this.options;
-
-		return getWrapMaxLen(maxLen!, maxLenBuffer);
-	}
-
-	getUnwrapMaxLen(): number {
-		const { maxLen, maxLenBuffer } = this.options;
-
-		return getUnwrapMaxLen(maxLen!, maxLenBuffer);
 	}
 
 	getFromKeyword(node: ImportDeclaration): AST.Token {
@@ -256,7 +211,13 @@ export class ImportAlignment extends BaseESLintRule {
 	}
 
 	isSuitableImport(node: ImportDeclaration): boolean {
-		return node.type === 'ImportDeclaration' && node.specifiers.length >= 1 && isSingleLine(node);
+		if (node.type !== 'ImportDeclaration' || node.specifiers.length < 1 || !isSingleLine(node)) {
+			return false;
+		}
+
+		// The fix rewrites the gap before `from`, so an import with anything but spaces or tabs there, such as a comment, is left as written
+		const fromKeyword = this.getFromKeyword(node);
+		return /^[ \t]*$/.test(this.sourceCode.text.slice(this.sourceCode.getTokenBefore(fromKeyword)!.range[1], fromKeyword.range[0]));
 	}
 
 	findSurroundingImports(node: ImportDeclarationNode): ImportDeclarationNode[] {
@@ -359,50 +320,45 @@ export class ImportAlignment extends BaseESLintRule {
 }
 
 interface AlignImportsOptions {
-	collapseExtraSpaces?: boolean;
-	minColumnWidth?: number;
+	collapseExtraSpaces? : boolean;
+	minColumnWidth?      : number;
 	/** Wrap single-line named imports when the line exceeds this length. */
-	maxLen?: number;
-	/**
-	 * Characters subtracted from `maxLen` when deciding whether to unwrap a
-	 * multiline import, and added when deciding whether to wrap. Prevents
-	 * wrap/unwrap oscillation near the limit. Default: `5`. Use `0` to disable.
-	 */
-	maxLenBuffer?: number;
-	maxSpaces?: number;
+	maxLen?              : number;
+	maxLenBuffer?        : number;
+	maxSpaces?           : number;
 }
 
 interface ResolvedAlignImportsOptions {
-	collapseExtraSpaces: boolean;
-	minColumnWidth: number;
-	maxSpaces: number;
-	maxLen?: number;
-	maxLenBuffer: number;
+	collapseExtraSpaces : boolean;
+	minColumnWidth      : number;
+	maxSpaces           : number;
+	maxLen?             : number;
+	maxLenBuffer        : number;
 }
 
 interface ImportParent {
-	body: ImportDeclarationNode[];
+	body : ImportDeclarationNode[];
 }
 
 interface ImportDeclarationNode extends ImportDeclaration {
-	parent: ImportParent;
-	loc: NonNullable<ImportDeclaration['loc']>;
+	parent : ImportParent;
+	loc    : NonNullable<ImportDeclaration['loc']>;
 }
 
 interface ImportLineInfo {
-	node: ImportDeclaration;
-	prevTokenEnd: number;
-	fromTokenStart: number;
+	node           : ImportDeclaration;
+	prevTokenEnd   : number;
+	fromTokenStart : number;
 }
 
 interface LineDiff {
-	diff: number;
-	line: ImportLineInfo;
+	diff : number;
+	line : ImportLineInfo;
 }
 
 interface AlignmentInfo {
-	alignmentColumn: number;
-	groupLines: ImportLineInfo[];
+	alignmentColumn : number;
+	groupLines      : ImportLineInfo[];
 }
 
 function getImportPrefix(sourceCode: SourceCode, node: ImportDeclaration): string | null {
@@ -453,12 +409,24 @@ function replaceImportText(
 	node: ImportDeclaration,
 	text: string
 ): Rule.Fix {
-	const finalText  = `${text};`;
+	return fixer.replaceTextRange(getImportTextRange(sourceCode, node), `${text};`);
+}
+
+/** The import's text, taking in a `;` after it that the parser left outside the import. */
+function getImportTextRange(sourceCode: SourceCode, node: ImportDeclaration): AST.Range {
 	const tokenAfter = sourceCode.getTokenAfter(node);
-	if (tokenAfter && tokenAfter.value === ';') {
-		return fixer.replaceTextRange([ node.range![0], tokenAfter.range[1] ], finalText);
-	}
-	return fixer.replaceText(node, finalText);
+
+	return [ node.range![0], tokenAfter && tokenAfter.value === ';' ? tokenAfter.range[1] : node.range![1] ];
+}
+
+/**
+ * Wrapping and unwrapping rebuild the import from its `{` on out of its specifiers' texts, so they would drop a comment
+ * anywhere past the `{`.
+ */
+function hasCommentInRebuiltText(sourceCode: SourceCode, node: ImportDeclaration): boolean {
+	const openingBrace = sourceCode.getFirstToken(node, token => token.value === '{')!;
+
+	return hasCommentsInRange(sourceCode, openingBrace.range[0], getImportTextRange(sourceCode, node)[1]);
 }
 
 function collapseImportLayout(text: string): string {

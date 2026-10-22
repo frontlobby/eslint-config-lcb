@@ -1,8 +1,7 @@
-import type { Rule, SourceCode } from 'eslint';
-import type { Literal }          from 'estree';
+import type { Rule }    from 'eslint';
+import type { Literal } from 'estree';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getSourceCode }  from '../utils.mts';
 
 const message = "Use double quotes so the contained single quote doesn't have to be escaped";
 
@@ -24,15 +23,6 @@ export class PreferUnescapedQuotes extends BaseESLintRule {
 		fixable : 'code',
 		schema  : [],
 	} as const;
-
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
-
-	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
-	}
 
 	static create(context: Rule.RuleContext): Rule.RuleListener {
 		const preferUnescapedQuotes = new PreferUnescapedQuotes(context);
