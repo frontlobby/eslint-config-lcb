@@ -126,33 +126,33 @@ export class VueFacingDecoratorPropRequirements extends BaseESLintRule {
 }
 
 interface Decorator {
-	type: 'Decorator';
-	expression: Expression;
-	range: [number, number];
+	type       : 'Decorator';
+	expression : Expression;
+	range      : [number, number];
 }
 
 interface PropertyDefinition {
-	type: 'PropertyDefinition';
-	key: Expression;
-	readonly?: boolean;
-	decorators?: Decorator[];
-	parent?: ClassBodyWithParent;
-	loc?: NonNullable<Identifier['loc']>;
+	type        : 'PropertyDefinition';
+	key         : Expression;
+	readonly?   : boolean;
+	decorators? : Decorator[];
+	parent?     : ClassBodyWithParent;
+	loc?        : NonNullable<Identifier['loc']>;
 }
 
 interface ClassBodyWithParent extends ClassBody {
-	parent?: ClassDeclaration | ClassExpression;
+	parent? : ClassDeclaration | ClassExpression;
 }
 
 interface ClassWithDecorators {
-	type: 'ClassDeclaration' | 'ClassExpression';
-	decorators?: Decorator[];
-	body: ClassBodyWithParent;
+	type        : 'ClassDeclaration' | 'ClassExpression';
+	decorators? : Decorator[];
+	body        : ClassBodyWithParent;
 }
 
 interface DecoratorImports {
-	hasComponentImport: boolean;
-	hasPropImport: boolean;
+	hasComponentImport : boolean;
+	hasPropImport      : boolean;
 }
 
 type PropCallAnalysis =

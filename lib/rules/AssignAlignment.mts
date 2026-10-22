@@ -210,16 +210,16 @@ export class AssignAlignment extends BaseESLintRule {
 }
 
 interface AlignAssignOptions {
-	maxSpaces?: number;
+	maxSpaces? : number;
 }
 
 interface ResolvedAlignAssignOptions {
-	maxSpaces: number;
+	maxSpaces : number;
 }
 
 interface AssignmentEqualsInfo {
-	equalsPosition: number;
-	operatorLength: number;
+	equalsPosition : number;
+	operatorLength : number;
 }
 
 type AlignableParent = BlockStatement | Program;

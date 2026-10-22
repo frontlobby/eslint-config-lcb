@@ -13,10 +13,10 @@ type SwitchCaseNode = Node & { consequent: Node[] };
 type DecoratedNode = Node & { decorators?: Node[]; declaration?: { decorators?: Node[] } };
 
 interface Options {
-	minLines?: number;
-	largeLines?: number;
-	shortLineLength?: number;
-	shortIfLineLength?: number;
+	minLines?          : number;
+	largeLines?        : number;
+	shortLineLength?   : number;
+	shortIfLineLength? : number;
 }
 
 /**

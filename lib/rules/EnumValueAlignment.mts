@@ -146,33 +146,39 @@ export class EnumValueAlignment extends BaseESLintRule {
 }
 
 interface TSEnumMember {
-	type: 'TSEnumMember';
-	id: Identifier;
-	initializer?: Expression;
-	loc: NonNullable<Identifier['loc']>;
-	range: [number, number];
+	type         : 'TSEnumMember';
+	id           : Identifier;
+	initializer? : Expression;
+	loc          : NonNullable<Identifier['loc']>;
+	range        : [number, number];
 }
 
 interface TSEnumDeclaration {
-	type: 'TSEnumDeclaration';
-	members: TSEnumMember[];
-	loc: NonNullable<Identifier['loc']>;
+	type    : 'TSEnumDeclaration';
+	members : TSEnumMember[];
+	loc     : NonNullable<Identifier['loc']>;
 }
 
 interface EqualsToken {
-	type: AST.Token['type'];
-	value: string;
-	range: [number, number];
-	loc: {
-		start: { line: number; column: number };
-		end: { line: number; column: number };
+	type  : AST.Token['type'];
+	value : string;
+	range : [number, number];
+	loc   : {
+		start : {
+			line   : number;
+			column : number;
+		};
+		end   : {
+			line   : number;
+			column : number;
+		};
 	};
 }
 
 interface LineInfo {
-	equalsToken: EqualsToken;
-	keyEndColumn: number;
-	member: TSEnumMember;
+	equalsToken  : EqualsToken;
+	keyEndColumn : number;
+	member       : TSEnumMember;
 }
 
 /** Every enum member lies on a single source line, and all members share that line. */

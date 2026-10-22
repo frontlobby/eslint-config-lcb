@@ -133,22 +133,22 @@ export class PreferSmallTernary extends BaseESLintRule {
 }
 
 interface PreferSmallTernaryOptions {
-	maxLen: number;
+	maxLen : number;
 }
 
 interface ReturnBranch {
-	type: 'return';
-	value: Expression;
+	type  : 'return';
+	value : Expression;
 }
 
 interface AssignBranch {
-	type: 'assign';
-	left: Pattern;
-	value: Expression;
+	type  : 'assign';
+	left  : Pattern;
+	value : Expression;
 }
 
 interface IfStatementWithParent extends IfStatement {
-	parent: Node;
+	parent : Node;
 }
 
 type BranchAction = ReturnBranch | AssignBranch;

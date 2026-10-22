@@ -135,22 +135,22 @@ export class SingleLineJsonObject extends BaseESLintRule {
 
 interface SingleLineJsonObjectOptions {
 	/** Split single-line objects when the containing line exceeds this length. */
-	maxLen?: number;
+	maxLen?       : number;
 	/**
 	 * Characters subtracted from `maxLen` when deciding whether to collapse a
 	 * multiline object, and added when deciding whether to split. Default: `5`.
 	 * Use `0` to disable.
 	 */
-	maxLenBuffer?: number;
+	maxLenBuffer? : number;
 }
 
 interface ResolvedSingleLineJsonObjectOptions {
-	maxLen: number;
-	maxLenBuffer: number;
+	maxLen       : number;
+	maxLenBuffer : number;
 }
 
 interface ObjectExpressionWithParent extends ObjectExpression {
-	parent: Node & { parent?: Node };
+	parent : Node & { parent?: Node };
 }
 
 type ObjectProperty = Property | SpreadElement;

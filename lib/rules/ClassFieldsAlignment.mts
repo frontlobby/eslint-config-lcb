@@ -151,40 +151,40 @@ export class ClassFieldsAlignment extends BaseESLintRule {
 }
 
 interface ClassFieldsAlignmentOptions {
-	maxSpaces?: number;
+	maxSpaces? : number;
 }
 
 interface ResolvedClassFieldsAlignmentOptions {
-	maxSpaces: number;
+	maxSpaces : number;
 }
 
 interface ClassBody {
-	body: ClassMember[];
+	body : ClassMember[];
 }
 
 interface ClassMember {
-	type: string;
-	key?: ClassMemberNode;
-	value?: ClassMemberNode | null;
-	loc: SourceLocation;
+	type   : string;
+	key?   : ClassMemberNode;
+	value? : ClassMemberNode | null;
+	loc    : SourceLocation;
 }
 
 interface ClassMemberNode {
-	range: [ number, number ];
+	range : [ number, number ];
 }
 
 interface SourceLocation {
-	start: SourcePosition;
-	end: SourcePosition;
+	start : SourcePosition;
+	end   : SourcePosition;
 }
 
 interface SourcePosition {
-	line: number;
-	column: number;
+	line   : number;
+	column : number;
 }
 
 interface ClassFieldLine {
-	equalsToken: AST.Token;
-	member: ClassMember;
-	tokenBeforeEquals: AST.Token;
+	equalsToken       : AST.Token;
+	member            : ClassMember;
+	tokenBeforeEquals : AST.Token;
 }

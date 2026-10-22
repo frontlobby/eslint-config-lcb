@@ -359,50 +359,50 @@ export class ImportAlignment extends BaseESLintRule {
 }
 
 interface AlignImportsOptions {
-	collapseExtraSpaces?: boolean;
-	minColumnWidth?: number;
+	collapseExtraSpaces? : boolean;
+	minColumnWidth?      : number;
 	/** Wrap single-line named imports when the line exceeds this length. */
-	maxLen?: number;
+	maxLen?              : number;
 	/**
 	 * Characters subtracted from `maxLen` when deciding whether to unwrap a
 	 * multiline import, and added when deciding whether to wrap. Prevents
 	 * wrap/unwrap oscillation near the limit. Default: `5`. Use `0` to disable.
 	 */
-	maxLenBuffer?: number;
-	maxSpaces?: number;
+	maxLenBuffer?        : number;
+	maxSpaces?           : number;
 }
 
 interface ResolvedAlignImportsOptions {
-	collapseExtraSpaces: boolean;
-	minColumnWidth: number;
-	maxSpaces: number;
-	maxLen?: number;
-	maxLenBuffer: number;
+	collapseExtraSpaces : boolean;
+	minColumnWidth      : number;
+	maxSpaces           : number;
+	maxLen?             : number;
+	maxLenBuffer        : number;
 }
 
 interface ImportParent {
-	body: ImportDeclarationNode[];
+	body : ImportDeclarationNode[];
 }
 
 interface ImportDeclarationNode extends ImportDeclaration {
-	parent: ImportParent;
-	loc: NonNullable<ImportDeclaration['loc']>;
+	parent : ImportParent;
+	loc    : NonNullable<ImportDeclaration['loc']>;
 }
 
 interface ImportLineInfo {
-	node: ImportDeclaration;
-	prevTokenEnd: number;
-	fromTokenStart: number;
+	node           : ImportDeclaration;
+	prevTokenEnd   : number;
+	fromTokenStart : number;
 }
 
 interface LineDiff {
-	diff: number;
-	line: ImportLineInfo;
+	diff : number;
+	line : ImportLineInfo;
 }
 
 interface AlignmentInfo {
-	alignmentColumn: number;
-	groupLines: ImportLineInfo[];
+	alignmentColumn : number;
+	groupLines      : ImportLineInfo[];
 }
 
 function getImportPrefix(sourceCode: SourceCode, node: ImportDeclaration): string | null {

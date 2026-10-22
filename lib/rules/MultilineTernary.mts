@@ -132,22 +132,22 @@ export class MultilineTernary extends BaseESLintRule {
 
 interface MultilineTernaryOptions {
 	/** Split single-line ternaries when the containing line exceeds this length. */
-	maxLen?: number;
+	maxLen?       : number;
 	/**
 	 * Characters subtracted from `maxLen` when deciding whether to collapse a
 	 * multiline ternary, and added when deciding whether to split. Default: `5`.
 	 * Use `0` to disable.
 	 */
-	maxLenBuffer?: number;
+	maxLenBuffer? : number;
 }
 
 interface ResolvedMultilineTernaryOptions {
-	maxLen: number;
-	maxLenBuffer: number;
+	maxLen       : number;
+	maxLenBuffer : number;
 }
 
 interface ConditionalExpressionWithParent extends ConditionalExpression {
-	parent: Node;
+	parent : Node;
 }
 
 function isEligibleTernary(node: ConditionalExpressionWithParent, sourceCode: SourceCode): boolean {
