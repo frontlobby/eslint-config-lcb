@@ -89,3 +89,42 @@ Rules that support these options:
 'local-rules/align-imports': ['error', { maxLen: 140, maxLenBuffer: 10 }],
 'local-rules/single-line-json-object': ['error', { maxLen: 130, maxLenBuffer: 10 }],
 ```
+
+# `local-rules/interface-layout`
+
+Lays out multi-line TypeScript interfaces (single-line ones are left alone), and inline object types
+declared on class fields:
+
+```ts
+interface SidebarSubitem {
+	meta : {
+		title       : string;
+		/** Used by e2e tests */
+		dataAutoId? : string;
+		icon?       : string;
+	};
+	/**
+	 * A comment of several lines keeps its line breaks
+	 * in the multi-line JSDoc form
+	 */
+	path : string;
+}
+```
+
+- No blank lines between members.
+- Field colons are aligned with at least one space before them, so the types line up.
+- An inline object type used as a field's type, directly or as an array (`{ … }[]`), is split over
+  multiple lines, one member per line, and laid out by the same rules. The same goes for one declared as a
+  class field's type; the class field itself keeps its `name: type` spacing.
+- Field comments become one JSDoc block directly above the field, so editors show them on hover. That
+  covers `//`, `/* */` and JSDoc comments above the field and a comment trailing on its last line; a
+  field with both gets them merged, the comments above first. Each comment line stays one JSDoc line. A
+  single line is written `/** text */` when that fits within `maxLen`; longer text, or several lines, uses
+  the multi-line form.
+- Directive comments (`eslint-disable`, `@ts-expect-error`, `#region`, …) are left untouched, and so is
+  every other comment on the same field. Comments that belong to no field, such as one before the
+  closing brace, are left untouched too.
+
+Padding before a type colon is normally reported by `@stylistic/type-annotation-spacing`, so the base
+config turns that rule off and enables `local-rules/type-annotation-spacing` in its place: the same rule,
+minus the space-before-colon checks on fields `interface-layout` aligns.
