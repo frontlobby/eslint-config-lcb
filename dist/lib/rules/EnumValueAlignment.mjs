@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { findAlignedToken, reportMisalignedRun, splitIntoRuns } from "../alignment.mjs";
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
 import { isSingleLine } from "../utils.mjs";
 const messageAlign = 'Enum values should be aligned';
@@ -37,16 +38,10 @@ export class EnumValueAlignment extends BaseESLintRule {
             }
             return;
         }
-        const blocks = splitMembersIntoBlocksByLineGaps(members);
+        // Consecutive members belong to the same block only when no source lines sit between them
+        const blocks = splitIntoRuns(members, (prevMember, nextMember) => !hasInterveningLineBetweenMembers(prevMember, nextMember));
         for (const block of blocks) {
-            const blockLines = block.map(member => this.getLineInfo(member)).filter((line) => Boolean(line));
-            if (blockLines.length < 2) {
-                continue;
-            }
-            const equalsColumn = Math.max(...blockLines.map(line => line.keyEndColumn)) + 1;
-            blockLines
-                .filter(line => line.equalsToken.loc.start.column !== equalsColumn)
-                .forEach(line => this.reportUnalignedMember(line, equalsColumn));
+            reportMisalignedRun(this.context, _.compact(block.map(member => this.getLineInfo(member))), messageAlign);
         }
     }
     checkSingleLineMemberSpacing(line) {
@@ -77,34 +72,9 @@ export class EnumValueAlignment extends BaseESLintRule {
         if (!member.initializer || !isSingleLine(member.id) || !isSingleLine(member.initializer)) {
             return null;
         }
-        const equalsToken = this.getEqualsToken(member);
-        if (!equalsToken) {
-            return null;
-        }
-        const textBetweenKeyAndEquals = this.sourceCode.text.slice(member.id.range[1], equalsToken.range[0]);
-        return !/^[ \t]*$/.test(textBetweenKeyAndEquals) ? null : { equalsToken, keyEndColumn: member.id.loc.end.column, member };
-    }
-    getEqualsToken(member) {
-        let token = this.sourceCode.getTokenAfter(member.id);
-        while (token && token.range[0] < member.initializer.range[0]) {
-            if (token.value === '=') {
-                return token;
-            }
-            token = this.sourceCode.getTokenAfter(token);
-        }
-        return null;
-    }
-    reportUnalignedMember(line, equalsColumn) {
-        this.context.report({
-            node: line.member,
-            loc: line.equalsToken.loc.start,
-            message: messageAlign,
-            fix: fixer => this.getSpacingFix(line, equalsColumn, fixer),
-        });
-    }
-    getSpacingFix(line, equalsColumn, fixer) {
-        const spacing = ' '.repeat(equalsColumn - line.keyEndColumn);
-        return fixer.replaceTextRange([line.member.id.range[1], line.equalsToken.range[0]], spacing);
+        // An enum member's name is a single token, so the token before its `=` is the name itself
+        const alignedToken = findAlignedToken(this.sourceCode, member.id, member.initializer.range[0]);
+        return alignedToken ? { ...alignedToken, member } : null;
     }
 }
 /** Every enum member lies on a single source line, and all members share that line. */
@@ -126,22 +96,6 @@ function isMembersOnOneSourceLine(node) {
         }
     }
     return true;
-}
-/** Consecutive members belong to the same block only when no source lines sit between them. */
-function splitMembersIntoBlocksByLineGaps(members) {
-    if (_.isEmpty(members)) {
-        return [];
-    }
-    const blocks = [[members[0]]];
-    for (let i = 1; i < members.length; i++) {
-        const prev = members[i - 1];
-        const curr = members[i];
-        if (hasInterveningLineBetweenMembers(prev, curr)) {
-            blocks.push([]);
-        }
-        blocks[blocks.length - 1].push(curr);
-    }
-    return blocks;
 }
 function hasInterveningLineBetweenMembers(prevMember, nextMember) {
     return nextMember.loc.start.line > prevMember.loc.end.line + 1;

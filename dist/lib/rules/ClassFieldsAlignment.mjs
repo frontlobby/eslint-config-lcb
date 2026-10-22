@@ -1,3 +1,5 @@
+import _ from 'lodash';
+import { findAlignedToken, reportMisalignedRun, splitIntoRuns } from "../alignment.mjs";
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
 import { isSingleLine } from "../utils.mjs";
 const messageAlign = 'Class field initializers should be aligned';
@@ -39,76 +41,31 @@ export class ClassFieldsAlignment extends BaseESLintRule {
     }
     checkClassBody(node) {
         for (const block of this.buildAlignmentBlocks(node)) {
-            if (block.length < 2) {
-                continue;
-            }
-            const equalsColumn = Math.max(...block.map(field => field.tokenBeforeEquals.loc.end.column)) + 1;
-            for (const field of block) {
-                if (field.equalsToken.loc.start.column !== equalsColumn) {
-                    this.reportUnalignedField(field, equalsColumn);
-                }
-            }
+            reportMisalignedRun(this.context, block, messageAlign);
         }
     }
+    /**
+     * Fields on consecutive lines. Any other member ends a block, and so does a field whose padding before `=` would
+     * differ from the previous field's by more than `maxSpaces`.
+     */
     buildAlignmentBlocks(node) {
-        const blocks = [];
-        let currentBlock = [];
-        let previousField = null;
-        for (const member of node.body) {
-            const field = this.getClassFieldLine(member);
-            if (!field || !previousField || field.member.loc.start.line !== previousField.member.loc.end.line + 1) {
-                if (currentBlock.length > 0) {
-                    blocks.push(currentBlock);
-                }
-                currentBlock = field ? [field] : [];
-            }
-            else if (this.isWithinMaxSpacing(field, previousField)) {
-                currentBlock.push(field);
-            }
-            else {
-                blocks.push(currentBlock);
-                currentBlock = [field];
-            }
-            previousField = field;
-        }
-        if (currentBlock.length > 0) {
-            blocks.push(currentBlock);
-        }
-        return blocks;
+        const fields = node.body.map(member => this.getClassFieldLine(member));
+        return splitIntoRuns(fields, (previousField, field) => previousField !== null
+            && field !== null
+            && field.member.loc.start.line === previousField.member.loc.end.line + 1
+            && this.isWithinMaxSpacing(field, previousField))
+            .map(block => _.compact(block));
     }
     isWithinMaxSpacing(field, previousField) {
-        const fieldColumn = field.tokenBeforeEquals.loc.end.column;
-        const previousFieldColumn = previousField.tokenBeforeEquals.loc.end.column;
+        const fieldColumn = field.tokenBefore.loc.end.column;
+        const previousFieldColumn = previousField.tokenBefore.loc.end.column;
         return Math.abs(fieldColumn - previousFieldColumn) <= this.options.maxSpaces;
     }
     getClassFieldLine(member) {
         if (member.type !== 'PropertyDefinition' || !member.key || !member.value || !isSingleLine(member)) {
             return null;
         }
-        const equalsToken = this.getEqualsToken(member);
-        if (!equalsToken) {
-            return null;
-        }
-        const tokenBeforeEquals = this.sourceCode.getTokenBefore(equalsToken);
-        const textBeforeEquals = this.sourceCode.text.slice(tokenBeforeEquals.range[1], equalsToken.range[0]);
-        return /^[ \t]*$/.test(textBeforeEquals) ? { equalsToken, member, tokenBeforeEquals } : null;
-    }
-    getEqualsToken(member) {
-        let token = this.sourceCode.getTokenAfter(member.key);
-        while (token && token.range[0] < member.value.range[0]) {
-            if (token.value === '=') {
-                return token;
-            }
-            token = this.sourceCode.getTokenAfter(token);
-        }
-        return null;
-    }
-    reportUnalignedField(field, equalsColumn) {
-        this.context.report({
-            node: field.member,
-            loc: field.equalsToken.loc.start,
-            message: messageAlign,
-            fix: fixer => fixer.replaceTextRange([field.tokenBeforeEquals.range[1], field.equalsToken.range[0]], ' '.repeat(equalsColumn - field.tokenBeforeEquals.loc.end.column)),
-        });
+        const alignedToken = findAlignedToken(this.sourceCode, member.key, member.value.range[0]);
+        return alignedToken ? { ...alignedToken, member } : null;
     }
 }
