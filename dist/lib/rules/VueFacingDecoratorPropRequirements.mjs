@@ -24,11 +24,9 @@ export class VueFacingDecoratorPropRequirements extends BaseESLintRule {
             emptyPropArguments: '@Prop() must be replaced with an options object.',
         },
     };
-    context;
     decoratorImports;
     constructor(context) {
-        super();
-        this.context = context;
+        super(context);
         this.decoratorImports = { hasComponentImport: false, hasPropImport: false };
     }
     static create(context) {

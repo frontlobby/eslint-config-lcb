@@ -1,5 +1,4 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode } from "../utils.mjs";
 const messageAlign = 'Class field initializers should be aligned';
 /**
  * Align initialized class fields on their equals signs.
@@ -24,13 +23,9 @@ export class ClassFieldsAlignment extends BaseESLintRule {
                 additionalProperties: false,
             }],
     };
-    context;
-    sourceCode;
     options;
     constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
+        super(context);
         this.options = Object.assign({ maxSpaces: 25 }, context.options[0]);
     }
     static create(context) {

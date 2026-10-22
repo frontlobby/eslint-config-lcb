@@ -1,8 +1,7 @@
-import type { Rule, SourceCode } from 'eslint';
-import type { Comment, Node }    from 'estree';
+import type { Rule }          from 'eslint';
+import type { Comment, Node } from 'estree';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getSourceCode }  from '../utils.mts';
 
 const ifStatementStart = /^if\s*\(/;
 const message          = 'A multi-line statement should be separated from adjacent statements by exactly one blank line';
@@ -57,8 +56,6 @@ export class MultilineStatementPadding extends BaseESLintRule {
 		],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	minLines: number;
 	largeLines: number;
 	shortLineLength: number;
@@ -66,11 +63,9 @@ export class MultilineStatementPadding extends BaseESLintRule {
 	maxGuardLines = 3;
 
 	constructor(context: Rule.RuleContext) {
-		super();
+		super(context);
 		const options = context.options[0] as Options | undefined;
 
-		this.context           = context;
-		this.sourceCode        = getSourceCode(context);
 		this.minLines          = options?.minLines ?? 3;
 		this.largeLines        = options?.largeLines ?? 6;
 		this.shortLineLength   = options?.shortLineLength ?? 10;

@@ -1,5 +1,4 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode } from "../utils.mjs";
 const defaultMaxLen = 130;
 const messageAlign = 'Interface fields should be aligned on their colons';
 const messageBlankLine = 'Unexpected blank line between interface fields';
@@ -48,13 +47,9 @@ export class InterfaceLayout extends BaseESLintRule {
             },
         ],
     };
-    context;
-    sourceCode;
     options;
     constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
+        super(context);
         this.options = Object.assign({ maxLen: defaultMaxLen }, context.options[0]);
     }
     static create(context) {

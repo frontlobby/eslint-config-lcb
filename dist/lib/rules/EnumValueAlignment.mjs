@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode, isSingleLine } from "../utils.mjs";
+import { isSingleLine } from "../utils.mjs";
 const messageAlign = 'Enum values should be aligned';
 const messageSpacing = "Use a single space on each side of '=' in a single-line enum";
 /**
@@ -17,13 +17,6 @@ export class EnumValueAlignment extends BaseESLintRule {
         fixable: 'whitespace',
         schema: [],
     };
-    context;
-    sourceCode;
-    constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
-    }
     static create(context) {
         const enumValueAlignment = new EnumValueAlignment(context);
         return {

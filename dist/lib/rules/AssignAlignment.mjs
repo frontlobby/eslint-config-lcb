@@ -1,5 +1,5 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode, hasPropsWithValues } from "../utils.mjs";
+import { hasPropsWithValues } from "../utils.mjs";
 const messageAlign = 'Assignments should be aligned';
 /**
  * Align assignment statements on their equals signs.
@@ -25,13 +25,9 @@ export class AssignAlignment extends BaseESLintRule {
             },
         ],
     };
-    context;
-    sourceCode;
     options;
     constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
+        super(context);
         this.options = Object.assign({ maxSpaces: 25 }, context.options[0]);
     }
     static create(context) {

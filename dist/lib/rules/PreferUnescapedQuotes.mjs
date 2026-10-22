@@ -1,5 +1,4 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode } from "../utils.mjs";
 const message = "Use double quotes so the contained single quote doesn't have to be escaped";
 /**
  * Rewrite single-quoted strings that escape a single quote as double-quoted strings.
@@ -18,13 +17,6 @@ export class PreferUnescapedQuotes extends BaseESLintRule {
         fixable: 'code',
         schema: [],
     };
-    context;
-    sourceCode;
-    constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
-    }
     static create(context) {
         const preferUnescapedQuotes = new PreferUnescapedQuotes(context);
         return {

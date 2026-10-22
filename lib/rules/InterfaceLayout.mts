@@ -2,7 +2,6 @@ import type { AST, Rule, SourceCode } from 'eslint';
 import type { Comment }               from 'estree';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getSourceCode }  from '../utils.mts';
 
 const defaultMaxLen = 130;
 
@@ -59,14 +58,10 @@ export class InterfaceLayout extends BaseESLintRule {
 		],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	options: ResolvedInterfaceLayoutOptions;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
+		super(context);
 
 		this.options = Object.assign({ maxLen : defaultMaxLen }, context.options[0] as InterfaceLayoutOptions | undefined);
 	}

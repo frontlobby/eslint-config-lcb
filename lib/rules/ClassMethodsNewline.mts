@@ -2,7 +2,6 @@ import type { Rule, SourceCode } from 'eslint';
 import type { Node }             from 'estree';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getSourceCode }  from '../utils.mts';
 
 const memberMessage       = 'Class methods should be separated by exactly one blank line';
 const closingBraceMessage = 'The final class method should be followed by exactly one blank line';
@@ -35,15 +34,6 @@ export class ClassMethodsNewline extends BaseESLintRule {
 		fixable : 'whitespace',
 		schema  : [],
 	} as const;
-
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
-
-	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
-	}
 
 	static create(context: Rule.RuleContext): Rule.RuleListener {
 		const rule = new ClassMethodsNewline(context);

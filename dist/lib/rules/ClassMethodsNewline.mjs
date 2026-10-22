@@ -1,5 +1,4 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode } from "../utils.mjs";
 const memberMessage = 'Class methods should be separated by exactly one blank line';
 const closingBraceMessage = 'The final class method should be followed by exactly one blank line';
 const getterSetterMessage = 'A getter and its setter should not be separated by a blank line';
@@ -21,13 +20,6 @@ export class ClassMethodsNewline extends BaseESLintRule {
         fixable: 'whitespace',
         schema: [],
     };
-    context;
-    sourceCode;
-    constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
-    }
     static create(context) {
         const rule = new ClassMethodsNewline(context);
         return {

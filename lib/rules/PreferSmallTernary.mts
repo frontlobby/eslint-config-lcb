@@ -1,8 +1,8 @@
 import type { Rule, SourceCode } from 'eslint';
 import type { AssignmentExpression, BlockStatement, ConditionalExpression, Expression, IfStatement, Node, Pattern, Statement } from 'estree';
 
-import { BaseESLintRule }              from '../BaseESLintRule.mts';
-import { getSourceCode, isSingleLine } from '../utils.mts';
+import { BaseESLintRule } from '../BaseESLintRule.mts';
+import { isSingleLine }   from '../utils.mts';
 
 const message = 'Prefer a ternary expression when the if/else fits within maxLen';
 
@@ -34,15 +34,11 @@ export class PreferSmallTernary extends BaseESLintRule {
 		],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	maxLen: number;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
-		this.maxLen     = (context.options[0] as PreferSmallTernaryOptions).maxLen;
+		super(context);
+		this.maxLen = (context.options[0] as PreferSmallTernaryOptions).maxLen;
 	}
 
 	static create(context: Rule.RuleContext): Rule.RuleListener {

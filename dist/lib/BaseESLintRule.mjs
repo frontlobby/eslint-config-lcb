@@ -1,8 +1,14 @@
+import { getSourceCode } from "./utils.mjs";
 /**
  * Base class for all ESLint rules.
  */
 export class BaseESLintRule {
-    constructor(..._args) { }
+    context;
+    sourceCode;
+    constructor(context) {
+        this.context = context;
+        this.sourceCode = getSourceCode(context);
+    }
     static get meta() {
         throw new TypeError(`${this.name} must implement static meta`);
     }

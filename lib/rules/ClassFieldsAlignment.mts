@@ -1,7 +1,6 @@
-import type { AST, Rule, SourceCode } from 'eslint';
+import type { AST, Rule } from 'eslint';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getSourceCode }  from '../utils.mts';
 
 const messageAlign = 'Class field initializers should be aligned';
 
@@ -30,15 +29,11 @@ export class ClassFieldsAlignment extends BaseESLintRule {
 		} ],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	options: ResolvedClassFieldsAlignmentOptions;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
-		this.options    = Object.assign({ maxSpaces : 25 }, context.options[0] as ClassFieldsAlignmentOptions | undefined);
+		super(context);
+		this.options = Object.assign({ maxSpaces : 25 }, context.options[0] as ClassFieldsAlignmentOptions | undefined);
 	}
 
 	static create(context: Rule.RuleContext): Rule.RuleListener {

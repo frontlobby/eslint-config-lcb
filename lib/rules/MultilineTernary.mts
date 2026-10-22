@@ -3,7 +3,7 @@ import type { ConditionalExpression, Expression, Node } from 'estree';
 import _                         from 'lodash';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getChildIndent, getLine, getLineIndent, getSourceCode, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
+import { getChildIndent, getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
 
 const defaultMaxLen = 100;
 
@@ -55,14 +55,10 @@ export class MultilineTernary extends BaseESLintRule {
 		],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	options: ResolvedMultilineTernaryOptions;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
+		super(context);
 
 		this.options = Object.assign({
 			maxLen       : defaultMaxLen,

@@ -1,9 +1,9 @@
-import type { AST, Rule, SourceCode } from 'eslint';
+import type { AST, Rule } from 'eslint';
 import type { Expression, Identifier } from 'estree';
-import _                              from 'lodash';
+import _                  from 'lodash';
 
-import { BaseESLintRule }              from '../BaseESLintRule.mts';
-import { getSourceCode, isSingleLine } from '../utils.mts';
+import { BaseESLintRule } from '../BaseESLintRule.mts';
+import { isSingleLine }   from '../utils.mts';
 
 const messageAlign   = 'Enum values should be aligned';
 const messageSpacing = "Use a single space on each side of '=' in a single-line enum";
@@ -23,15 +23,6 @@ export class EnumValueAlignment extends BaseESLintRule {
 		fixable : 'whitespace',
 		schema  : [],
 	} as const;
-
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
-
-	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
-	}
 
 	static create(context: Rule.RuleContext): Rule.RuleListener {
 		const enumValueAlignment = new EnumValueAlignment(context);

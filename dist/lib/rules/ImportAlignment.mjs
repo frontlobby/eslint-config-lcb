@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getChildIndent, getLine, getLineIndent, getSourceCode, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from "../utils.mjs";
+import { getChildIndent, getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from "../utils.mjs";
 const messageExceedsMaxLen = 'Import statement exceeds maximum line length';
 const messageShouldUnwrap = 'Import statement should be on a single line when it fits within the line limit';
 /**
@@ -65,14 +65,10 @@ export class ImportAlignment extends BaseESLintRule {
                 additionalProperties: false,
             }],
     };
-    context;
-    sourceCode;
     hasExplicitCollapseExtraSpaces;
     options;
     constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
+        super(context);
         this.hasExplicitCollapseExtraSpaces = Object.prototype.hasOwnProperty.call(context.options[0] || {}, 'collapseExtraSpaces');
         this.options = Object.assign({
             collapseExtraSpaces: false,

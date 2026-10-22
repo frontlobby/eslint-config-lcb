@@ -34,12 +34,10 @@ export class VueFacingDecoratorPropRequirements extends BaseESLintRule {
 		},
 	} as const;
 
-	context: Rule.RuleContext;
 	decoratorImports: DecoratorImports;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context          = context;
+		super(context);
 		this.decoratorImports = { hasComponentImport : false, hasPropImport : false };
 	}
 

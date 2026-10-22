@@ -3,7 +3,7 @@ import type { ImportDeclaration, ImportSpecifier } from 'estree';
 import _                              from 'lodash';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getChildIndent, getLine, getLineIndent, getSourceCode, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
+import { getChildIndent, getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
 
 const messageExceedsMaxLen = 'Import statement exceeds maximum line length';
 const messageShouldUnwrap  = 'Import statement should be on a single line when it fits within the line limit';
@@ -72,15 +72,11 @@ export class ImportAlignment extends BaseESLintRule {
 		} ],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	hasExplicitCollapseExtraSpaces: boolean;
 	options: ResolvedAlignImportsOptions;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context                        = context;
-		this.sourceCode                     = getSourceCode(context);
+		super(context);
 		this.hasExplicitCollapseExtraSpaces = Object.prototype.hasOwnProperty.call(context.options[0] || {}, 'collapseExtraSpaces');
 
 		this.options = Object.assign({

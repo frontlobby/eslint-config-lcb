@@ -2,7 +2,7 @@ import type { Rule, SourceCode } from 'eslint';
 import type { Expression, Node, ObjectExpression, Property, SpreadElement } from 'estree';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getLine, getLineIndent, getSourceCode, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
+import { getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
 
 const defaultMaxLen = 100;
 
@@ -51,14 +51,10 @@ export class SingleLineJsonObject extends BaseESLintRule {
 		],
 	} as const;
 
-	context: Rule.RuleContext;
-	sourceCode: SourceCode;
 	options: ResolvedSingleLineJsonObjectOptions;
 
 	constructor(context: Rule.RuleContext) {
-		super();
-		this.context    = context;
-		this.sourceCode = getSourceCode(context);
+		super(context);
 
 		this.options = Object.assign({
 			maxLen       : defaultMaxLen,

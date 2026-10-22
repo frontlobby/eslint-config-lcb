@@ -1,5 +1,4 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode } from "../utils.mjs";
 const ifStatementStart = /^if\s*\(/;
 const message = 'A multi-line statement should be separated from adjacent statements by exactly one blank line';
 const unwantedMessage = 'A statement that opens a block on a short line should not have a blank line above it';
@@ -39,18 +38,14 @@ export class MultilineStatementPadding extends BaseESLintRule {
             },
         ],
     };
-    context;
-    sourceCode;
     minLines;
     largeLines;
     shortLineLength;
     shortIfLineLength;
     maxGuardLines = 3;
     constructor(context) {
-        super();
+        super(context);
         const options = context.options[0];
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
         this.minLines = options?.minLines ?? 3;
         this.largeLines = options?.largeLines ?? 6;
         this.shortLineLength = options?.shortLineLength ?? 10;

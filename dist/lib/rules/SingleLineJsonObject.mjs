@@ -1,5 +1,5 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getLine, getLineIndent, getSourceCode, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from "../utils.mjs";
+import { getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from "../utils.mjs";
 const defaultMaxLen = 100;
 /**
  * Collapse or expand object literals based on line length.
@@ -44,13 +44,9 @@ export class SingleLineJsonObject extends BaseESLintRule {
             },
         ],
     };
-    context;
-    sourceCode;
     options;
     constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
+        super(context);
         this.options = Object.assign({
             maxLen: defaultMaxLen,
             maxLenBuffer: 5,

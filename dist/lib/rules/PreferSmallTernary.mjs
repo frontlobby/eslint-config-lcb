@@ -1,5 +1,5 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode, isSingleLine } from "../utils.mjs";
+import { isSingleLine } from "../utils.mjs";
 const message = 'Prefer a ternary expression when the if/else fits within maxLen';
 /**
  * Prefer ternary expressions for small if/else return and assignment patterns.
@@ -27,13 +27,9 @@ export class PreferSmallTernary extends BaseESLintRule {
             },
         ],
     };
-    context;
-    sourceCode;
     maxLen;
     constructor(context) {
-        super();
-        this.context = context;
-        this.sourceCode = getSourceCode(context);
+        super(context);
         this.maxLen = context.options[0].maxLen;
     }
     static create(context) {
