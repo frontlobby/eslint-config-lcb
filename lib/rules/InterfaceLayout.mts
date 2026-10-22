@@ -2,6 +2,7 @@ import type { AST, Rule, SourceCode } from 'eslint';
 import type { Comment }               from 'estree';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
+import { countBlankLines, getChildIndent, getLineIndent, isSingleLine } from '../utils.mts';
 
 const defaultMaxLen = 130;
 
@@ -123,7 +124,7 @@ export class InterfaceLayout extends BaseESLintRule {
 		for (let i = 1; i < items.length; i++) {
 			const range: [number, number] = [ items[i - 1]!.range![1], items[i]!.range![0] ];
 			const gap                     = this.sourceCode.text.slice(...range);
-			if (countNewlines(gap) < 2) {
+			if (countBlankLines(gap) === 0) {
 				continue;
 			}
 
@@ -178,7 +179,7 @@ export class InterfaceLayout extends BaseESLintRule {
 			return;
 		}
 
-		const indent   = this.sourceCode.lines[member.loc.start.line - 1]!.match(/^\s*/)![0];
+		const indent   = getLineIndent(member, this.sourceCode);
 		const docLines = this.getDocLines(lines, indent);
 		if (!trailing && leading.length === 1 && this.isDocAbove(leading[0]!, member, docLines.map(line => `${indent}${line}`).join('\n'))) {
 			return;
@@ -208,7 +209,7 @@ export class InterfaceLayout extends BaseESLintRule {
 	}
 
 	getCommentFix(fixer: Rule.RuleFixer, member: TSMember, { leading, trailing }: FieldComments, docLines: string[]): Rule.Fix {
-		const indent      = this.sourceCode.lines[member.loc.start.line - 1]!.match(/^\s*/)![0];
+		const indent      = getLineIndent(member, this.sourceCode);
 		const memberText  = this.sourceCode.getText(member as unknown as Rule.Node);
 		const end         = trailing ? trailing.range![1] : member.range[1];
 		const lastLeading = leading[leading.length - 1];
@@ -254,14 +255,14 @@ export class InterfaceLayout extends BaseESLintRule {
 	}
 
 	getExpandedText(node: TSBody): string {
-		const indent = this.sourceCode.lines[node.loc.start.line - 1]!.match(/^\s*/)![0];
+		const indent = getLineIndent(node, this.sourceCode);
 
 		const lines = this.getBodyItems(node, getMembers(node)).map(item => {
 			const text = this.sourceCode.getText(item as unknown as Rule.Node);
 			return isComment(item) ? text : `${text.replace(/[;,]$/, '')};`;
 		});
 
-		return `{\n${lines.map(line => `${indent}\t${line}`).join('\n')}\n${indent}}`;
+		return `{\n${lines.map(line => `${getChildIndent(indent)}${line}`).join('\n')}\n${indent}}`;
 	}
 
 }
@@ -280,7 +281,7 @@ export function isAlignedMember(member: TSMember, sourceCode: SourceCode): boole
  */
 function isLaidOutBody(node: TSBody): boolean {
 	if (node.type === 'TSInterfaceBody') {
-		return node.loc.start.line !== node.loc.end.line;
+		return !isSingleLine(node);
 	}
 
 	let annotation = node.parent;
@@ -355,10 +356,6 @@ function isDirective(comment: Comment): boolean {
 
 function isComment(item: BodyItem | AST.Token | Comment): item is Comment {
 	return item.type === 'Line' || item.type === 'Block';
-}
-
-function countNewlines(text: string): number {
-	return text.split('\n').length - 1;
 }
 
 interface InterfaceLayoutOptions {

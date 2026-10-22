@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getChildIndent, getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from "../utils.mjs";
+import { getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, hasCommentsInRange, isSingleLine } from "../utils.mjs";
 const defaultMaxLen = 100;
 const splitMessage = 'Ternary should be split over multiple lines when it exceeds the line limit';
 const collapseMessage = 'Ternary should be on a single line when it fits within the line limit';
@@ -110,7 +110,7 @@ function isEligibleTernary(node, sourceCode) {
         || !isCollapsibleOperand(node.alternate, sourceCode)) {
         return false;
     }
-    return isCleanSpan(node.range[0], node.range[1], sourceCode);
+    return !hasCommentsInRange(sourceCode, node.range[0], node.range[1]);
 }
 function isCollapsibleOperand(node, sourceCode) {
     return isSingleLine(node)
@@ -174,12 +174,4 @@ function getMultiLineTernaryText(node, sourceCode) {
     const trueText = sourceCode.getText(node.consequent);
     const falseText = sourceCode.getText(node.alternate);
     return `${testText}\n${operatorIndent}? ${trueText}\n${operatorIndent}: ${falseText}`;
-}
-function getReplacementLine(node, replacement, sourceCode) {
-    const firstLine = sourceCode.lines[node.loc.start.line - 1];
-    const lastLine = sourceCode.lines[node.loc.end.line - 1];
-    return firstLine.slice(0, node.loc.start.column) + replacement + lastLine.slice(node.loc.end.column);
-}
-function isCleanSpan(start, end, sourceCode) {
-    return sourceCode.getAllComments().every(comment => comment.range[1] <= start || comment.range[0] >= end);
 }

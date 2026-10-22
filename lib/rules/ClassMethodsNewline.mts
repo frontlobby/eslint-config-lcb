@@ -2,6 +2,7 @@ import type { Rule, SourceCode } from 'eslint';
 import type { Node }             from 'estree';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
+import { getIndentOfLine, getLineEnding, hasCommentsInRange } from '../utils.mts';
 
 const memberMessage       = 'Class methods should be separated by exactly one blank line';
 const closingBraceMessage = 'The final class method should be followed by exactly one blank line';
@@ -85,8 +86,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
 		}
 
 		const gapRange: [ number, number ] = [ previousMember.range![1], getMemberStartRange(currentMember, this.sourceCode) ];
-		const hasComments                  = this.sourceCode.getAllComments().some(comment =>
-			comment.range![0] >= gapRange[0] && comment.range![1] <= gapRange[1]);
+		const hasComments                  = hasCommentsInRange(this.sourceCode, ...gapRange);
 
 		this.context.report({
 			node    : currentMember,
@@ -104,8 +104,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
 		}
 
 		const gapRange: [ number, number ] = [ getter.range![1], getMemberStartRange(setter, this.sourceCode) ];
-		const hasComments                  = this.sourceCode.getAllComments().some(comment =>
-			comment.range![0] >= gapRange[0] && comment.range![1] <= gapRange[1]);
+		const hasComments                  = hasCommentsInRange(this.sourceCode, ...gapRange);
 
 		this.context.report({
 			node    : setter,
@@ -143,8 +142,7 @@ export class ClassMethodsNewline extends BaseESLintRule {
 		}
 
 		const gapRange: [ number, number ] = [ finalMember.range![1], classBody.range![1] - 1 ];
-		const hasComments                  = this.sourceCode.getAllComments().some(comment =>
-			comment.range![0] >= gapRange[0] && comment.range![1] <= gapRange[1]);
+		const hasComments                  = hasCommentsInRange(this.sourceCode, ...gapRange);
 
 		this.context.report({
 			node    : finalMember,
@@ -176,17 +174,11 @@ function isGetterSetterPair(previousMember: Node, currentMember: Node, sourceCod
 }
 
 function hasCommentsBetweenMembers(previousMember: Node, currentMember: Node, sourceCode: SourceCode): boolean {
-	return hasCommentsInRange(previousMember.range![1], getMemberStartRange(currentMember, sourceCode), sourceCode);
+	return hasCommentsInRange(sourceCode, previousMember.range![1], getMemberStartRange(currentMember, sourceCode));
 }
 
 function hasCommentsAfterMember(member: Node, classBody: ClassBody, sourceCode: SourceCode): boolean {
-	return hasCommentsInRange(member.range![1], classBody.range![1] - 1, sourceCode);
-}
-
-function hasCommentsInRange(start: number, end: number, sourceCode: SourceCode): boolean {
-	return sourceCode.getAllComments().some(comment =>
-		comment.range![0] >= start
-		&& comment.range![1] <= end);
+	return hasCommentsInRange(sourceCode, member.range![1], classBody.range![1] - 1);
 }
 
 function getBlankLineCount(previousMember: Node, currentMember: Node, sourceCode: SourceCode): number {
@@ -207,22 +199,22 @@ function getBlankLineCountAfterMember(member: Node, classBody: ClassBody, source
 }
 
 function getRequiredGap(currentMember: Node, sourceCode: SourceCode): string {
-	const lineEnding = sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
-	const indent     = sourceCode.lines[getMemberStartLine(currentMember, sourceCode) - 1]!.match(/^\s*/)?.[0] ?? '';
+	const lineEnding = getLineEnding(sourceCode);
+	const indent     = getIndentOfLine(sourceCode, getMemberStartLine(currentMember, sourceCode));
 
 	return `${lineEnding}${lineEnding}${indent}`;
 }
 
 function getDirectGap(currentMember: Node, sourceCode: SourceCode): string {
-	const lineEnding = sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
-	const indent     = sourceCode.lines[getMemberStartLine(currentMember, sourceCode) - 1]!.match(/^\s*/)?.[0] ?? '';
+	const lineEnding = getLineEnding(sourceCode);
+	const indent     = getIndentOfLine(sourceCode, getMemberStartLine(currentMember, sourceCode));
 
 	return `${lineEnding}${indent}`;
 }
 
 function getRequiredGapBeforeClosingBrace(classBody: ClassBody, sourceCode: SourceCode): string {
-	const lineEnding = sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
-	const indent     = sourceCode.lines[classBody.loc!.end.line - 1]!.match(/^\s*/)?.[0] ?? '';
+	const lineEnding = getLineEnding(sourceCode);
+	const indent     = getIndentOfLine(sourceCode, classBody.loc!.end.line);
 
 	return `${lineEnding}${lineEnding}${indent}`;
 }

@@ -115,7 +115,7 @@ function isMembersOnOneSourceLine(node) {
     }
     let line = null;
     for (const member of members) {
-        if (member.loc.start.line !== member.loc.end.line) {
+        if (!isSingleLine(member)) {
             return false;
         }
         if (line === null) {

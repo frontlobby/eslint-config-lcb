@@ -2,6 +2,7 @@ import type { Rule }          from 'eslint';
 import type { Comment, Node } from 'estree';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
+import { countBlankLines, getLineEnding, isSingleLine } from '../utils.mts';
 
 const ifStatementStart = /^if\s*\(/;
 const message          = 'A multi-line statement should be separated from adjacent statements by exactly one blank line';
@@ -155,7 +156,7 @@ export class MultilineStatementPadding extends BaseESLintRule {
 
 		const blankCounts = segments.map(([ start, end ]) => countBlankLines(this.sourceCode.text.slice(start, end)));
 		const node        = this.isMultiline(current) ? current : previous;
-		const lineEnding  = this.sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
+		const lineEnding  = getLineEnding(this.sourceCode);
 		const nextLine    = (gapComments[0] ?? current).loc!.start.line;
 
 		// The break comes from the line above: a `});` or a `}` has already parted the two statements, and a
@@ -252,10 +253,6 @@ function isShortGuard(statement: Node, maxGuardLines: number): boolean {
 		&& statement.loc!.end.line - statement.loc!.start.line + 1 <= maxGuardLines;
 }
 
-function isSingleLine(statement: Node): boolean {
-	return statement.loc!.start.line === statement.loc!.end.line;
-}
-
 /**
  * Decorators written above an `export` sit outside the exported statement's own range, so a statement's text
  * starts at its first decorator rather than at `range[0]`. Reading the gap up to `range[0]` instead would put
@@ -280,8 +277,4 @@ function getWhitespaceSegments(start: number, end: number, comments: Comment[]):
 	}
 
 	return segments;
-}
-
-function countBlankLines(whitespace: string): number {
-	return Math.max(0, (whitespace.match(/\n/g)?.length ?? 0) - 1);
 }

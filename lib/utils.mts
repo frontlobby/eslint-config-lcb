@@ -1,8 +1,13 @@
-import type { Rule, RuleTester, SourceCode } from 'eslint';
-import type { Expression, Node } from 'estree';
-import _                         from 'lodash';
+import type { Rule, RuleTester, SourceCode }     from 'eslint';
+import type { Expression, Node, SourceLocation } from 'estree';
+import _ from 'lodash';
 
 type NodeWithParent = Node & { parent?: Node | null };
+
+/** Anything with a source location, so rules with their own node interfaces need no cast. */
+interface Located {
+	loc? : SourceLocation | null;
+}
 
 export function hasPropsWithValues(node: Node | null | undefined, attributes: Record<string, unknown>): boolean {
 	if (!node) {
@@ -21,20 +26,48 @@ export function getSourceCode(context: Rule.RuleContext): SourceCode {
 	return ctx.sourceCode ?? ctx.getSourceCode!();
 }
 
-export function isSingleLine(node: Node): boolean {
+export function isSingleLine(node: Located): boolean {
 	return node.loc!.start.line === node.loc!.end.line;
 }
 
-export function getLine(node: Node, sourceCode: SourceCode): string {
+export function getLine(node: Located, sourceCode: SourceCode): string {
 	return sourceCode.lines[node.loc!.start.line - 1]!;
 }
 
-export function getLineIndent(node: Node, sourceCode: SourceCode): string {
-	return getLine(node, sourceCode).match(/^\s*/)![0]!;
+/** The line `node` sits on with `replacement` in its place, from the start of its first line to the end of its last. */
+export function getReplacementLine(node: Located, replacement: string, sourceCode: SourceCode): string {
+	const firstLine = sourceCode.lines[node.loc!.start.line - 1]!;
+	const lastLine  = sourceCode.lines[node.loc!.end.line - 1]!;
+
+	return firstLine.slice(0, node.loc!.start.column) + replacement + lastLine.slice(node.loc!.end.column);
+}
+
+export function getLineIndent(node: Located, sourceCode: SourceCode): string {
+	return getIndentOfLine(sourceCode, node.loc!.start.line);
+}
+
+/** The leading whitespace of a line, numbered from 1. */
+export function getIndentOfLine(sourceCode: SourceCode, lineNumber: number): string {
+	return sourceCode.lines[lineNumber - 1]!.match(/^\s*/)![0];
 }
 
 export function getChildIndent(baseIndent: string): string {
 	return `${baseIndent}\t`;
+}
+
+/** `\r\n` when the file uses it anywhere, otherwise `\n`. */
+export function getLineEnding(sourceCode: SourceCode): string {
+	return sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
+}
+
+/** The blank lines in a run of whitespace between two pieces of code: one fewer than its line breaks. */
+export function countBlankLines(whitespace: string): number {
+	return Math.max(0, (whitespace.match(/\n/g)?.length ?? 0) - 1);
+}
+
+/** Whether any comment overlaps the text from `start` to `end`, even in part. */
+export function hasCommentsInRange(sourceCode: SourceCode, start: number, end: number): boolean {
+	return sourceCode.getAllComments().some(comment => comment.range![1] > start && comment.range![0] < end);
 }
 
 export function getWrapMaxLen(maxLen: number, maxLenBuffer: number): number {

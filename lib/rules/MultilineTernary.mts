@@ -3,7 +3,9 @@ import type { ConditionalExpression, Expression, Node } from 'estree';
 import _                         from 'lodash';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getChildIndent, getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
+import {
+	getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, hasCommentsInRange, isSingleLine
+} from '../utils.mts';
 
 const defaultMaxLen = 100;
 
@@ -157,7 +159,7 @@ function isEligibleTernary(node: ConditionalExpressionWithParent, sourceCode: So
 		return false;
 	}
 
-	return isCleanSpan(node.range![0], node.range![1], sourceCode);
+	return !hasCommentsInRange(sourceCode, node.range![0], node.range![1]);
 }
 
 function isCollapsibleOperand(node: Expression, sourceCode: SourceCode): boolean {
@@ -229,15 +231,4 @@ function getMultiLineTernaryText(node: ConditionalExpression, sourceCode: Source
 	const falseText      = sourceCode.getText(node.alternate);
 
 	return `${testText}\n${operatorIndent}? ${trueText}\n${operatorIndent}: ${falseText}`;
-}
-
-function getReplacementLine(node: ConditionalExpression, replacement: string, sourceCode: SourceCode): string {
-	const firstLine = sourceCode.lines[node.loc!.start.line - 1]!;
-	const lastLine  = sourceCode.lines[node.loc!.end.line - 1]!;
-
-	return firstLine.slice(0, node.loc!.start.column) + replacement + lastLine.slice(node.loc!.end.column);
-}
-
-function isCleanSpan(start: number, end: number, sourceCode: SourceCode): boolean {
-	return sourceCode.getAllComments().every(comment => comment.range![1]! <= start || comment.range![0]! >= end);
 }

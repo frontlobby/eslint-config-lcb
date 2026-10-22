@@ -182,7 +182,7 @@ function isMembersOnOneSourceLine(node: TSEnumDeclaration): boolean {
 	let line: number | null = null;
 
 	for (const member of members) {
-		if (member.loc.start.line !== member.loc.end.line) {
+		if (!isSingleLine(member)) {
 			return false;
 		}
 

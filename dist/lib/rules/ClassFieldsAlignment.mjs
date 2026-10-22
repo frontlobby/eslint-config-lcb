@@ -1,4 +1,5 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
+import { isSingleLine } from "../utils.mjs";
 const messageAlign = 'Class field initializers should be aligned';
 /**
  * Align initialized class fields on their equals signs.
@@ -81,7 +82,7 @@ export class ClassFieldsAlignment extends BaseESLintRule {
         return Math.abs(fieldColumn - previousFieldColumn) <= this.options.maxSpaces;
     }
     getClassFieldLine(member) {
-        if (member.type !== 'PropertyDefinition' || !member.key || !member.value || member.loc.start.line !== member.loc.end.line) {
+        if (member.type !== 'PropertyDefinition' || !member.key || !member.value || !isSingleLine(member)) {
             return null;
         }
         const equalsToken = this.getEqualsToken(member);

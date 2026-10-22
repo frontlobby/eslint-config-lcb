@@ -1,4 +1,5 @@
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
+import { countBlankLines, getChildIndent, getLineIndent, isSingleLine } from "../utils.mjs";
 const defaultMaxLen = 130;
 const messageAlign = 'Interface fields should be aligned on their colons';
 const messageBlankLine = 'Unexpected blank line between interface fields';
@@ -99,7 +100,7 @@ export class InterfaceLayout extends BaseESLintRule {
         for (let i = 1; i < items.length; i++) {
             const range = [items[i - 1].range[1], items[i].range[0]];
             const gap = this.sourceCode.text.slice(...range);
-            if (countNewlines(gap) < 2) {
+            if (countBlankLines(gap) === 0) {
                 continue;
             }
             this.context.report({
@@ -146,7 +147,7 @@ export class InterfaceLayout extends BaseESLintRule {
         if (lines.length === 0 || comments.some(isDirective) || lines.some(line => line.includes('*/'))) {
             return;
         }
-        const indent = this.sourceCode.lines[member.loc.start.line - 1].match(/^\s*/)[0];
+        const indent = getLineIndent(member, this.sourceCode);
         const docLines = this.getDocLines(lines, indent);
         if (!trailing && leading.length === 1 && this.isDocAbove(leading[0], member, docLines.map(line => `${indent}${line}`).join('\n'))) {
             return;
@@ -171,7 +172,7 @@ export class InterfaceLayout extends BaseESLintRule {
         return comment.loc.end.line < member.loc.start.line && this.sourceCode.text.slice(lineStart, comment.range[1]) === docText;
     }
     getCommentFix(fixer, member, { leading, trailing }, docLines) {
-        const indent = this.sourceCode.lines[member.loc.start.line - 1].match(/^\s*/)[0];
+        const indent = getLineIndent(member, this.sourceCode);
         const memberText = this.sourceCode.getText(member);
         const end = trailing ? trailing.range[1] : member.range[1];
         const lastLeading = leading[leading.length - 1];
@@ -207,12 +208,12 @@ export class InterfaceLayout extends BaseESLintRule {
         return Boolean(before) && !isComment(before) && before.value !== '{' && before.loc.end.line === comment.loc.start.line;
     }
     getExpandedText(node) {
-        const indent = this.sourceCode.lines[node.loc.start.line - 1].match(/^\s*/)[0];
+        const indent = getLineIndent(node, this.sourceCode);
         const lines = this.getBodyItems(node, getMembers(node)).map(item => {
             const text = this.sourceCode.getText(item);
             return isComment(item) ? text : `${text.replace(/[;,]$/, '')};`;
         });
-        return `{\n${lines.map(line => `${indent}\t${line}`).join('\n')}\n${indent}}`;
+        return `{\n${lines.map(line => `${getChildIndent(indent)}${line}`).join('\n')}\n${indent}}`;
     }
 }
 /**
@@ -228,7 +229,7 @@ export function isAlignedMember(member, sourceCode) {
  */
 function isLaidOutBody(node) {
     if (node.type === 'TSInterfaceBody') {
-        return node.loc.start.line !== node.loc.end.line;
+        return !isSingleLine(node);
     }
     let annotation = node.parent;
     while (annotation?.type === 'TSArrayType') {
@@ -288,7 +289,4 @@ function isDirective(comment) {
 }
 function isComment(item) {
     return item.type === 'Line' || item.type === 'Block';
-}
-function countNewlines(text) {
-    return text.split('\n').length - 1;
 }

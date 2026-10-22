@@ -1,8 +1,9 @@
 import type { Rule, SourceCode } from 'eslint';
 import type { Expression, Node, ObjectExpression, Property, SpreadElement } from 'estree';
+import _                         from 'lodash';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
+import { getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
 
 const defaultMaxLen = 100;
 
@@ -90,7 +91,7 @@ export class SingleLineJsonObject extends BaseESLintRule {
 
 	checkSingleLineObject(node: ObjectExpressionWithParent): void {
 		const line = getLine(node, this.sourceCode);
-		if (line.length <= this.getWrapMaxLen() || isEmpty(node.properties)) {
+		if (line.length <= this.getWrapMaxLen() || _.isEmpty(node.properties)) {
 			return;
 		}
 
@@ -163,7 +164,7 @@ function isNestedObjectValue(node: ObjectExpressionWithParent): boolean {
 
 function isCollapsibleObjectExpression(node: ObjectExpression, sourceCode: SourceCode): boolean {
 	return node.type === 'ObjectExpression'
-		&& isEmpty(sourceCode.getCommentsInside(node))
+		&& _.isEmpty(sourceCode.getCommentsInside(node))
 		&& node.properties.every(property => isCollapsibleProperty(property, sourceCode));
 }
 
@@ -180,12 +181,12 @@ function isCollapsibleProperty(property: ObjectProperty, sourceCode: SourceCode)
 }
 
 function getSingleLineObjectText(node: ObjectExpression, sourceCode: SourceCode): string {
-	return isEmpty(node.properties) ? '{}' : `{ ${node.properties.map(property => getPropertyText(property, sourceCode)).join(', ')} }`;
+	return _.isEmpty(node.properties) ? '{}' : `{ ${node.properties.map(property => getPropertyText(property, sourceCode)).join(', ')} }`;
 }
 
 function getMultiLineObjectText(node: ObjectExpression, sourceCode: SourceCode): string {
 	const baseIndent     = getLineIndent(node, sourceCode);
-	const propertyIndent = `${baseIndent}\t`;
+	const propertyIndent = getChildIndent(baseIndent);
 
 	const properties = node.properties
 		.map(property => `${propertyIndent}${getPropertyText(property, sourceCode)},`)
@@ -211,7 +212,7 @@ function isCollapsibleValue(node: Expression | SpreadElement, sourceCode: Source
 	}
 
 	if (node.type === 'ArrayExpression') {
-		return isEmpty(sourceCode.getCommentsInside(node))
+		return _.isEmpty(sourceCode.getCommentsInside(node))
 			&& node.elements.every(element => element && isCollapsibleValue(element, sourceCode));
 	}
 
@@ -224,18 +225,7 @@ function getValueText(node: Expression | SpreadElement, sourceCode: SourceCode):
 	}
 
 	if (node.type === 'ArrayExpression') {
-		return isEmpty(node.elements) ? '[]' : `[ ${node.elements.map(element => getValueText(element!, sourceCode)).join(', ')} ]`;
+		return _.isEmpty(node.elements) ? '[]' : `[ ${node.elements.map(element => getValueText(element!, sourceCode)).join(', ')} ]`;
 	}
 	return sourceCode.getText(node);
-}
-
-function getReplacementLine(node: ObjectExpression, replacement: string, sourceCode: SourceCode): string {
-	const firstLine = sourceCode.lines[node.loc!.start.line - 1]!;
-	const lastLine  = sourceCode.lines[node.loc!.end.line - 1]!;
-
-	return firstLine.slice(0, node.loc!.start.column) + replacement + lastLine.slice(node.loc!.end.column);
-}
-
-function isEmpty<T>(value: T[] | null | undefined): value is [] | null | undefined {
-	return value == null || value.length === 0;
 }

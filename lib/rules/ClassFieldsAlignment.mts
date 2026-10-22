@@ -1,6 +1,7 @@
 import type { AST, Rule } from 'eslint';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
+import { isSingleLine }   from '../utils.mts';
 
 const messageAlign = 'Class field initializers should be aligned';
 
@@ -102,7 +103,7 @@ export class ClassFieldsAlignment extends BaseESLintRule {
 	}
 
 	getClassFieldLine(member: ClassMember): ClassFieldLine | null {
-		if (member.type !== 'PropertyDefinition' || !member.key || !member.value || member.loc.start.line !== member.loc.end.line) {
+		if (member.type !== 'PropertyDefinition' || !member.key || !member.value || !isSingleLine(member)) {
 			return null;
 		}
 

@@ -15,11 +15,33 @@ export function isSingleLine(node) {
 export function getLine(node, sourceCode) {
     return sourceCode.lines[node.loc.start.line - 1];
 }
+/** The line `node` sits on with `replacement` in its place, from the start of its first line to the end of its last. */
+export function getReplacementLine(node, replacement, sourceCode) {
+    const firstLine = sourceCode.lines[node.loc.start.line - 1];
+    const lastLine = sourceCode.lines[node.loc.end.line - 1];
+    return firstLine.slice(0, node.loc.start.column) + replacement + lastLine.slice(node.loc.end.column);
+}
 export function getLineIndent(node, sourceCode) {
-    return getLine(node, sourceCode).match(/^\s*/)[0];
+    return getIndentOfLine(sourceCode, node.loc.start.line);
+}
+/** The leading whitespace of a line, numbered from 1. */
+export function getIndentOfLine(sourceCode, lineNumber) {
+    return sourceCode.lines[lineNumber - 1].match(/^\s*/)[0];
 }
 export function getChildIndent(baseIndent) {
     return `${baseIndent}\t`;
+}
+/** `\r\n` when the file uses it anywhere, otherwise `\n`. */
+export function getLineEnding(sourceCode) {
+    return sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
+}
+/** The blank lines in a run of whitespace between two pieces of code: one fewer than its line breaks. */
+export function countBlankLines(whitespace) {
+    return Math.max(0, (whitespace.match(/\n/g)?.length ?? 0) - 1);
+}
+/** Whether any comment overlaps the text from `start` to `end`, even in part. */
+export function hasCommentsInRange(sourceCode, start, end) {
+    return sourceCode.getAllComments().some(comment => comment.range[1] > start && comment.range[0] < end);
 }
 export function getWrapMaxLen(maxLen, maxLenBuffer) {
     return maxLen + maxLenBuffer;

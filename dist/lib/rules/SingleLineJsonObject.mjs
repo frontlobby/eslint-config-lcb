@@ -1,5 +1,6 @@
+import _ from 'lodash';
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from "../utils.mjs";
+import { getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from "../utils.mjs";
 const defaultMaxLen = 100;
 /**
  * Collapse or expand object literals based on line length.
@@ -73,7 +74,7 @@ export class SingleLineJsonObject extends BaseESLintRule {
     }
     checkSingleLineObject(node) {
         const line = getLine(node, this.sourceCode);
-        if (line.length <= this.getWrapMaxLen() || isEmpty(node.properties)) {
+        if (line.length <= this.getWrapMaxLen() || _.isEmpty(node.properties)) {
             return;
         }
         this.context.report({
@@ -113,7 +114,7 @@ function isNestedObjectValue(node) {
 }
 function isCollapsibleObjectExpression(node, sourceCode) {
     return node.type === 'ObjectExpression'
-        && isEmpty(sourceCode.getCommentsInside(node))
+        && _.isEmpty(sourceCode.getCommentsInside(node))
         && node.properties.every(property => isCollapsibleProperty(property, sourceCode));
 }
 function isCollapsibleProperty(property, sourceCode) {
@@ -127,11 +128,11 @@ function isCollapsibleProperty(property, sourceCode) {
         && isCollapsibleValue(property.value, sourceCode);
 }
 function getSingleLineObjectText(node, sourceCode) {
-    return isEmpty(node.properties) ? '{}' : `{ ${node.properties.map(property => getPropertyText(property, sourceCode)).join(', ')} }`;
+    return _.isEmpty(node.properties) ? '{}' : `{ ${node.properties.map(property => getPropertyText(property, sourceCode)).join(', ')} }`;
 }
 function getMultiLineObjectText(node, sourceCode) {
     const baseIndent = getLineIndent(node, sourceCode);
-    const propertyIndent = `${baseIndent}\t`;
+    const propertyIndent = getChildIndent(baseIndent);
     const properties = node.properties
         .map(property => `${propertyIndent}${getPropertyText(property, sourceCode)},`)
         .join('\n');
@@ -151,7 +152,7 @@ function isCollapsibleValue(node, sourceCode) {
         return isCollapsibleObjectExpression(node, sourceCode);
     }
     if (node.type === 'ArrayExpression') {
-        return isEmpty(sourceCode.getCommentsInside(node))
+        return _.isEmpty(sourceCode.getCommentsInside(node))
             && node.elements.every(element => element && isCollapsibleValue(element, sourceCode));
     }
     return isSingleLine(node);
@@ -161,15 +162,7 @@ function getValueText(node, sourceCode) {
         return getSingleLineObjectText(node, sourceCode);
     }
     if (node.type === 'ArrayExpression') {
-        return isEmpty(node.elements) ? '[]' : `[ ${node.elements.map(element => getValueText(element, sourceCode)).join(', ')} ]`;
+        return _.isEmpty(node.elements) ? '[]' : `[ ${node.elements.map(element => getValueText(element, sourceCode)).join(', ')} ]`;
     }
     return sourceCode.getText(node);
-}
-function getReplacementLine(node, replacement, sourceCode) {
-    const firstLine = sourceCode.lines[node.loc.start.line - 1];
-    const lastLine = sourceCode.lines[node.loc.end.line - 1];
-    return firstLine.slice(0, node.loc.start.column) + replacement + lastLine.slice(node.loc.end.column);
-}
-function isEmpty(value) {
-    return value == null || value.length === 0;
 }
