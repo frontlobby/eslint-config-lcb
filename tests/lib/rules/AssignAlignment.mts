@@ -157,6 +157,15 @@ ruleTester.run('align-assign', AssignAlignment.toEslintRule(), {
 			thisVariableHas22Chars = 2;
 			b = 3;
 		`, { options : [ { maxSpaces : 20 } ] } ),
+
+		namedCase('leaves assignments with a comment before their operator as written', `
+			var a    = 1;
+			var asdf = 2;
+			b /* c */   = 3;
+			var /* = */ e   = 4;
+			var cc = 5;
+			var d  = 6;
+		`),
 	],
 	invalid : [
 		namedCase('fixes under-aligned consecutive variable declarations', {
@@ -271,6 +280,25 @@ ruleTester.run('align-assign', AssignAlignment.toEslintRule(), {
 			output : `
 				var a  = 2;
 				b     += 3;
+			`,
+			errors : createAlignmentErrors(2),
+		}),
+		namedCase('aligns the neighbours of assignments with a comment before their operator', {
+			code : `
+				var a = 1;
+				var asdf = 2;
+				b /* c */   += 3;
+				var /* = */ e   = 4;
+				var cc = 5;
+				var d = 6;
+			`,
+			output : `
+				var a    = 1;
+				var asdf = 2;
+				b /* c */   += 3;
+				var /* = */ e   = 4;
+				var cc = 5;
+				var d  = 6;
 			`,
 			errors : createAlignmentErrors(2),
 		}),

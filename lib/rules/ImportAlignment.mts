@@ -256,7 +256,13 @@ export class ImportAlignment extends BaseESLintRule {
 	}
 
 	isSuitableImport(node: ImportDeclaration): boolean {
-		return node.type === 'ImportDeclaration' && node.specifiers.length >= 1 && isSingleLine(node);
+		if (node.type !== 'ImportDeclaration' || node.specifiers.length < 1 || !isSingleLine(node)) {
+			return false;
+		}
+
+		// The fix rewrites the gap before `from`, so an import with anything but spaces or tabs there, such as a comment, is left as written
+		const fromKeyword = this.getFromKeyword(node);
+		return /^[ \t]*$/.test(this.sourceCode.text.slice(this.sourceCode.getTokenBefore(fromKeyword)!.range[1], fromKeyword.range[0]));
 	}
 
 	findSurroundingImports(node: ImportDeclarationNode): ImportDeclarationNode[] {

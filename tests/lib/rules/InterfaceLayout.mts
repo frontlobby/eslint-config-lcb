@@ -86,6 +86,15 @@ ruleTester.run('interface-layout', InterfaceLayout.toEslintRule(), {
 			}
 		`)),
 
+		namedCase('leaves fields with a comment beside the colon as written', dedent(`
+			interface User {
+				id        : string;
+				name /* display */: string;
+				nickname? : string;
+				age: /* years */ number;
+			}
+		`)),
+
 		namedCase('accepts a one-line JSDoc above the field', dedent(`
 			interface User {
 				/** Primary key */
@@ -195,6 +204,26 @@ ruleTester.run('interface-layout', InterfaceLayout.toEslintRule(), {
 				interface User {
 					id   : string;
 					name : string;
+				}
+			`),
+			errors : [ align, align ],
+		}),
+
+		namedCase('aligns the other fields around fields with a comment beside the colon', {
+			code : dedent(`
+				interface User {
+					id: string;
+					name /* display */: string;
+					nickname?   :   string;
+					age: /* years */ number;
+				}
+			`),
+			output : dedent(`
+				interface User {
+					id        : string;
+					name /* display */: string;
+					nickname? : string;
+					age: /* years */ number;
 				}
 			`),
 			errors : [ align, align ],

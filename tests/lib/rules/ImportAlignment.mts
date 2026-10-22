@@ -48,6 +48,14 @@ ruleTester.run('align-imports', ImportAlignment.toEslintRule(), trimCodeWhitespa
 		namedCase('accepts a long named import when maxLen is not set', `
 			import { alpha, beta, gamma, delta, epsilon, zeta, eta, theta } from 'some/module';
 		`),
+
+		namedCase('leaves an import with a comment before from as written', `
+			import foo    from 'foo';
+			import barbaz from 'bar';
+			import b /* c */   from 'b';
+			import x  from 'x';
+			import yy from 'y';
+		`),
 	],
 
 	invalid : [
@@ -166,6 +174,25 @@ ruleTester.run('align-imports', ImportAlignment.toEslintRule(), trimCodeWhitespa
 				import bar          from 'bar';
 			`,
 			options : [ { minColumnWidth : 20, collapseExtraSpaces : true } ],
+			errors  : [ { message : 'Unaligned import statement' }, { message : 'Unaligned import statement' } ],
+		}),
+
+		namedCase('collapses the neighbours of an import with a comment before from, leaving it as written', {
+			code    : `
+				import foo    from 'foo';
+				import barbaz   from 'bar';
+				import b /* c */   from 'b';
+				import x    from 'x';
+				import yy from 'y';
+			`,
+			output  : `
+				import foo    from 'foo';
+				import barbaz from 'bar';
+				import b /* c */   from 'b';
+				import x  from 'x';
+				import yy from 'y';
+			`,
+			options : [ { collapseExtraSpaces : true } ],
 			errors  : [ { message : 'Unaligned import statement' }, { message : 'Unaligned import statement' } ],
 		}),
 

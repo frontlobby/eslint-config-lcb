@@ -141,7 +141,12 @@ export class InterfaceLayout extends BaseESLintRule {
 	}
 
 	checkAlignment(members: TSMember[]): void {
-		const fields = members.map(member => getAlignedField(member, this.sourceCode)).filter((field): field is AlignedField => Boolean(field));
+		// The fix rewrites both sides of the colon, so a field with anything but spaces or tabs there, such as a comment, is left
+		// as written. Filtering it here rather than in getAlignedField keeps isAlignedMember true, so type-annotation-spacing
+		// leaves it alone too.
+		const fields = members.map(member => getAlignedField(member, this.sourceCode)).filter((field): field is AlignedField => Boolean(field))
+			.filter(field => /^[ \t]*:[ \t]*$/.test(this.sourceCode.text.slice(field.tokenBeforeColon.range[1], field.typeStart)));
+
 		if (fields.length === 0) {
 			return;
 		}
@@ -267,7 +272,8 @@ export class InterfaceLayout extends BaseESLintRule {
 }
 
 /**
- * Whether the member's colon is aligned by `interface-layout`, which then owns the spacing before it.
+ * Whether `interface-layout` owns the spacing before the member's colon: it aligns the colon, or leaves it as written
+ * when a comment sits beside it.
  */
 export function isAlignedMember(member: TSMember, sourceCode: SourceCode): boolean {
 	return Boolean(member.parent) && isLaidOutBody(member.parent!) && Boolean(getAlignedField(member, sourceCode));

@@ -79,6 +79,14 @@ export class AssignAlignment extends BaseESLintRule {
 				return;
 			}
 
+			// The fix shifts the text between the token before the operator and the operator, so a statement with anything but
+			// spaces or tabs there, such as a comment, is left as written. So is one whose `=` was found before that token.
+			const gapStart      = this.getTokenBeforeEquals(childNode).range![1] - childNode.range![0];
+			const operatorStart = equalsPos + 1 - this.getAssignmentEqualsInfo(childNode).operatorLength;
+			if (operatorStart < gapStart || !/^[ \t]*$/.test(text.slice(gapStart, operatorStart))) {
+				return;
+			}
+
 			if (blockEnd !== null && childNode.loc!.start.line === blockEnd + 1) {
 				alignBlocks[alignBlocks.length - 1]!.push(childNode as AlignableAssignment);
 			}
