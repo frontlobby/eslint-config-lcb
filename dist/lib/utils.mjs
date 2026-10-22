@@ -43,12 +43,43 @@ export function countBlankLines(whitespace) {
 export function hasCommentsInRange(sourceCode, start, end) {
     return sourceCode.getAllComments().some(comment => comment.range[1] > start && comment.range[0] < end);
 }
-export function getWrapMaxLen(maxLen, maxLenBuffer) {
+/**
+ * The longest a line may be before a rule wraps it over several lines.
+ *
+ * Rules that wrap a construct whose line is too long, and unwrap it again once it fits, take a `maxLen` and a
+ * `maxLenBuffer`. The buffer adds hysteresis on both sides of `maxLen`, so a construct sitting just above the limit
+ * does not ping-pong between the two forms on successive lint passes:
+ *
+ * - **Wrap** when the single-line length is `> maxLen + maxLenBuffer`
+ * - **Unwrap** when the collapsed length is `<= maxLen - maxLenBuffer` (see getUnwrapMaxLen)
+ *
+ * Lengths between those thresholds are left unchanged. The rules default `maxLenBuffer` to `5`; set it to `0` to wrap
+ * above `maxLen` and unwrap at or below it.
+ *
+ * @example maxLen 140, maxLenBuffer 10
+ * - Single line 141 chars → stay single line (141 <= 150)
+ * - Single line 151 chars → wrap to multiline
+ * - Collapsed 138 chars → stay multiline (138 > 130)
+ * - Collapsed 129 chars → unwrap to single line (129 <= 130)
+ */
+export function getWrapMaxLen({ maxLen, maxLenBuffer }) {
     return maxLen + maxLenBuffer;
 }
-export function getUnwrapMaxLen(maxLen, maxLenBuffer) {
+/** The longest a collapsed line may be for a rule to unwrap it onto one line; see getWrapMaxLen. */
+export function getUnwrapMaxLen({ maxLen, maxLenBuffer }) {
     return Math.max(0, maxLen - maxLenBuffer);
 }
+/** Schemas for the `maxLen` and `maxLenBuffer` options that getWrapMaxLen and getUnwrapMaxLen read. */
+export const maxLenSchema = {
+    maxLen: {
+        type: 'integer',
+        minimum: 1,
+    },
+    maxLenBuffer: {
+        type: 'integer',
+        minimum: 0,
+    },
+};
 function isNodeAnIdentifierWithName(node, subNode, name) {
     return hasPropsWithValues(node, { [`${subNode}.type`]: 'Identifier', [`${subNode}.name`]: name });
 }

@@ -1,37 +1,13 @@
 import _ from 'lodash';
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getChildIndent, getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from "../utils.mjs";
+import { getChildIndent, getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine, maxLenSchema } from "../utils.mjs";
 const messageExceedsMaxLen = 'Import statement exceeds maximum line length';
 const messageShouldUnwrap = 'Import statement should be on a single line when it fits within the line limit';
 /**
  * Align import statements.
  *
- * ## `maxLen` / `maxLenBuffer`
- *
- * When `maxLen` is set, named imports are wrapped onto multiple lines if a
- * single-line statement would exceed that length.
- *
- * Multiline imports may be collapsed back to one line when their collapsed
- * length fits within the limit. Without a buffer, imports sitting just above
- * `maxLen` can ping-pong: wrap (line too long) → unwrap (collapsed length still
- * fits) → wrap again on the next lint pass.
- *
- * `maxLenBuffer` adds hysteresis on both sides of `maxLen`:
- *
- * - **Wrap** when single-line length `> maxLen + maxLenBuffer`
- * - **Unwrap** when collapsed length `<= maxLen - maxLenBuffer`
- *
- * Lengths between those thresholds are left unchanged, which prevents
- * wrap/unwrap oscillation near the limit.
- *
- * Default `maxLenBuffer` is `5`. Set to `0` to wrap above `maxLen` and unwrap
- * at or below `maxLen` (legacy behavior).
- *
- * @example maxLen 140, maxLenBuffer 10
- * - Single line 141 chars → stay single line (141 <= 150)
- * - Single line 151 chars → wrap to multiline
- * - Collapsed 138 chars → stay multiline (138 > 130)
- * - Collapsed 129 chars → unwrap to single line (129 <= 130)
+ * When `maxLen` is set, long named imports are wrapped and multiline ones that fit are unwrapped, as described on
+ * getWrapMaxLen in `lib/utils.mts`.
  */
 export class ImportAlignment extends BaseESLintRule {
     static meta = {
@@ -50,14 +26,7 @@ export class ImportAlignment extends BaseESLintRule {
                     minColumnWidth: {
                         type: 'number',
                     },
-                    maxLen: {
-                        type: 'integer',
-                        minimum: 1,
-                    },
-                    maxLenBuffer: {
-                        type: 'integer',
-                        minimum: 0,
-                    },
+                    ...maxLenSchema,
                     maxSpaces: {
                         type: 'number',
                     },
@@ -107,12 +76,12 @@ export class ImportAlignment extends BaseESLintRule {
         };
     }
     checkMaxLen(node) {
-        const { maxLen } = this.options;
+        const { maxLen, maxLenBuffer } = this.options;
         if (!maxLen || !node.specifiers.some(specifier => specifier.type === 'ImportSpecifier')) {
             return false;
         }
         const sourceCode = this.sourceCode;
-        const wrapMaxLen = this.getWrapMaxLen();
+        const wrapMaxLen = getWrapMaxLen({ maxLen, maxLenBuffer });
         if (isSingleLine(node)) {
             if (getLine(node, sourceCode).length <= wrapMaxLen) {
                 return false;
@@ -124,7 +93,7 @@ export class ImportAlignment extends BaseESLintRule {
             });
             return true;
         }
-        if (getCollapsedLineLength(sourceCode, node) <= this.getUnwrapMaxLen()) {
+        if (getCollapsedLineLength(sourceCode, node) <= getUnwrapMaxLen({ maxLen, maxLenBuffer })) {
             this.context.report({
                 node,
                 message: messageShouldUnwrap,
@@ -161,14 +130,6 @@ export class ImportAlignment extends BaseESLintRule {
             return true;
         }
         return false;
-    }
-    getWrapMaxLen() {
-        const { maxLen, maxLenBuffer } = this.options;
-        return getWrapMaxLen(maxLen, maxLenBuffer);
-    }
-    getUnwrapMaxLen() {
-        const { maxLen, maxLenBuffer } = this.options;
-        return getUnwrapMaxLen(maxLen, maxLenBuffer);
     }
     getFromKeyword(node) {
         if (node.type !== 'ImportDeclaration' || _.isEmpty(node.specifiers)) {

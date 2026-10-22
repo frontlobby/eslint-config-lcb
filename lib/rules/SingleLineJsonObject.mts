@@ -3,26 +3,16 @@ import type { Expression, Node, ObjectExpression, Property, SpreadElement } from
 import _                         from 'lodash';
 
 import { BaseESLintRule } from '../BaseESLintRule.mts';
-import { getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, isSingleLine } from '../utils.mts';
+import {
+	getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, isSingleLine, maxLenSchema
+} from '../utils.mts';
 
 const defaultMaxLen = 100;
 
 /**
  * Collapse or expand object literals based on line length.
  *
- * ## `maxLen` / `maxLenBuffer`
- *
- * Single-line object literals are split across multiple lines when the
- * containing line exceeds `maxLen`. Multiline objects may be collapsed back to
- * one line when the resulting line fits within the limit.
- *
- * `maxLenBuffer` adds hysteresis on both sides of `maxLen`:
- *
- * - **Split** when line length `> maxLen + maxLenBuffer`
- * - **Collapse** when collapsed line length `<= maxLen - maxLenBuffer`
- *
- * Default `maxLenBuffer` is `5`. Set to `0` to split above `maxLen` and collapse
- * at or below `maxLen` (legacy behavior).
+ * `maxLen` and `maxLenBuffer` work as described on getWrapMaxLen in `lib/utils.mts`.
  */
 export class SingleLineJsonObject extends BaseESLintRule {
 
@@ -36,17 +26,8 @@ export class SingleLineJsonObject extends BaseESLintRule {
 		fixable : 'whitespace',
 		schema  : [
 			{
-				type       : 'object',
-				properties : {
-					maxLen : {
-						type    : 'integer',
-						minimum : 1,
-					},
-					maxLenBuffer : {
-						type    : 'integer',
-						minimum : 0,
-					},
-				},
+				type                 : 'object',
+				properties           : { ...maxLenSchema },
 				additionalProperties : false,
 			},
 		],
@@ -91,7 +72,7 @@ export class SingleLineJsonObject extends BaseESLintRule {
 
 	checkSingleLineObject(node: ObjectExpressionWithParent): void {
 		const line = getLine(node, this.sourceCode);
-		if (line.length <= this.getWrapMaxLen() || _.isEmpty(node.properties)) {
+		if (line.length <= getWrapMaxLen(this.options) || _.isEmpty(node.properties)) {
 			return;
 		}
 
@@ -105,7 +86,7 @@ export class SingleLineJsonObject extends BaseESLintRule {
 	checkMultiLineObject(node: ObjectExpressionWithParent): void {
 		const replacement = getSingleLineObjectText(node, this.sourceCode);
 		const line        = getReplacementLine(node, replacement, this.sourceCode);
-		if (line.length > this.getUnwrapMaxLen()) {
+		if (line.length > getUnwrapMaxLen(this.options)) {
 			return;
 		}
 
@@ -116,28 +97,11 @@ export class SingleLineJsonObject extends BaseESLintRule {
 		});
 	}
 
-	getWrapMaxLen(): number {
-		const { maxLen, maxLenBuffer } = this.options;
-
-		return getWrapMaxLen(maxLen, maxLenBuffer);
-	}
-
-	getUnwrapMaxLen(): number {
-		const { maxLen, maxLenBuffer } = this.options;
-
-		return getUnwrapMaxLen(maxLen, maxLenBuffer);
-	}
-
 }
 
 interface SingleLineJsonObjectOptions {
 	/** Split single-line objects when the containing line exceeds this length. */
 	maxLen?       : number;
-	/**
-	 * Characters subtracted from `maxLen` when deciding whether to collapse a
-	 * multiline object, and added when deciding whether to split. Default: `5`.
-	 * Use `0` to disable.
-	 */
 	maxLenBuffer? : number;
 }
 
