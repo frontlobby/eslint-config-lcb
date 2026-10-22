@@ -51,6 +51,18 @@ function greet(name: string): void {}
 class User { name: string; }
 interface Point { x: number; y: number }
 		`),
+
+		namedCase('leaves a comment before a colon in place', 'type P = { x /* c */: number; y? /* d */: string };'),
+
+		namedCase('leaves a comment after a colon in place', {
+			code    : 'let x: /* c */ number;',
+			options : [ { after : false } ],
+		}),
+
+		namedCase('leaves a comment beside an arrow in place', {
+			code    : 'type F = () /* c */ => /* d */ void;',
+			options : [ { before : false, after : false } ],
+		}),
 	],
 
 	invalid : [
@@ -88,6 +100,26 @@ interface Point { x: number; y: number }
 			code   : 'interface User {\n\tid :string;\n}',
 			output : 'interface User {\n\tid : string;\n}',
 			errors : [ { messageId : 'expectedSpaceAfter' } ],
+		}),
+
+		namedCase('fixes the space before a colon next to one with a comment beside it', {
+			code   : 'type P = { x /* c */: number; y : string };',
+			output : 'type P = { x /* c */: number; y: string };',
+			errors : [ { messageId : 'unexpectedSpaceBefore' } ],
+		}),
+
+		namedCase('fixes the space after a colon next to one with a comment beside it', {
+			code    : 'let a: /* c */ number, b: string;',
+			output  : 'let a: /* c */ number, b:string;',
+			options : [ { after : false } ],
+			errors  : [ { messageId : 'unexpectedSpaceAfter' } ],
+		}),
+
+		namedCase('fixes the space before an arrow next to one with a comment beside it', {
+			code    : 'type F = () /* c */ => void;\ntype G = () => void;',
+			output  : 'type F = () /* c */ => void;\ntype G = ()=> void;',
+			options : [ { before : false } ],
+			errors  : [ { messageId : 'unexpectedSpaceBefore' } ],
 		}),
 	],
 });

@@ -81,7 +81,7 @@ Default `maxLenBuffer` is **5**. Set to `0` to split/wrap above `maxLen` and col
 
 Rules that support these options:
 
-- `local-rules/align-imports` — named import statements
+- `local-rules/align-imports` — named import statements, except one with a comment after its `{`, which the rebuilt import would drop
 - `local-rules/multiline-ternary` — ternary expressions
 - `local-rules/single-line-json-object` — object literals
 
@@ -127,4 +127,5 @@ interface SidebarSubitem {
 
 Padding before a type colon is normally reported by `@stylistic/type-annotation-spacing`, so the base
 config turns that rule off and enables `local-rules/type-annotation-spacing` in its place: the same rule,
-minus the space-before-colon checks on fields `interface-layout` aligns.
+minus the space-before-colon checks on fields `interface-layout` aligns. It also leaves alone any colon or
+arrow whose fix would rewrite more than spaces or tabs, such as a comment beside it.

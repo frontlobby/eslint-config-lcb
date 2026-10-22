@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getChildIndent, getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, isSingleLine, maxLenSchema } from "../utils.mjs";
+import { getChildIndent, getLine, getLineIndent, getUnwrapMaxLen, getWrapMaxLen, hasCommentsInRange, isSingleLine, maxLenSchema } from "../utils.mjs";
 const messageExceedsMaxLen = 'Import statement exceeds maximum line length';
 const messageShouldUnwrap = 'Import statement should be on a single line when it fits within the line limit';
 /**
@@ -77,7 +77,7 @@ export class ImportAlignment extends BaseESLintRule {
     }
     checkMaxLen(node) {
         const { maxLen, maxLenBuffer } = this.options;
-        if (!maxLen || !node.specifiers.some(specifier => specifier.type === 'ImportSpecifier')) {
+        if (!maxLen || !node.specifiers.some(specifier => specifier.type === 'ImportSpecifier') || hasCommentInRebuiltText(this.sourceCode, node)) {
             return false;
         }
         const sourceCode = this.sourceCode;
@@ -289,12 +289,20 @@ function hasImportSemicolon(sourceCode, node) {
     return Boolean(tokenAfter && tokenAfter.value === ';');
 }
 function replaceImportText(fixer, sourceCode, node, text) {
-    const finalText = `${text};`;
+    return fixer.replaceTextRange(getImportTextRange(sourceCode, node), `${text};`);
+}
+/** The import's text, taking in a `;` after it that the parser left outside the import. */
+function getImportTextRange(sourceCode, node) {
     const tokenAfter = sourceCode.getTokenAfter(node);
-    if (tokenAfter && tokenAfter.value === ';') {
-        return fixer.replaceTextRange([node.range[0], tokenAfter.range[1]], finalText);
-    }
-    return fixer.replaceText(node, finalText);
+    return [node.range[0], tokenAfter && tokenAfter.value === ';' ? tokenAfter.range[1] : node.range[1]];
+}
+/**
+ * Wrapping and unwrapping rebuild the import from its `{` on out of its specifiers' texts, so they would drop a comment
+ * anywhere past the `{`.
+ */
+function hasCommentInRebuiltText(sourceCode, node) {
+    const openingBrace = sourceCode.getFirstToken(node, token => token.value === '{');
+    return hasCommentsInRange(sourceCode, openingBrace.range[0], getImportTextRange(sourceCode, node)[1]);
 }
 function collapseImportLayout(text) {
     return text
