@@ -1,4 +1,4 @@
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
 const message = "Use double quotes so the contained single quote doesn't have to be escaped";
 /**
  * Rewrite single-quoted strings that escape a single quote as double-quoted strings.

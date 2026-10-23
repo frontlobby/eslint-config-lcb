@@ -1,5 +1,5 @@
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { countBlankLines, getLineEnding, isSingleLine } from "../utils.mjs";
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
+import { countBlankLines, getLineEnding, isSingleLine } from '../utils.mjs';
 const ifStatementStart = /^if\s*\(/;
 const message = 'A multi-line statement should be separated from adjacent statements by exactly one blank line';
 const unwantedMessage = 'A statement that opens a block on a short line should not have a blank line above it';

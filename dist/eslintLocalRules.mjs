@@ -1,16 +1,16 @@
-import { AssignAlignment } from "./lib/rules/AssignAlignment.mjs";
-import { ClassFieldsAlignment } from "./lib/rules/ClassFieldsAlignment.mjs";
-import { ClassMethodsNewline } from "./lib/rules/ClassMethodsNewline.mjs";
-import { EnumValueAlignment } from "./lib/rules/EnumValueAlignment.mjs";
-import { ImportAlignment } from "./lib/rules/ImportAlignment.mjs";
-import { InterfaceLayout } from "./lib/rules/InterfaceLayout.mjs";
-import { MultilineStatementPadding } from "./lib/rules/MultilineStatementPadding.mjs";
-import { MultilineTernary } from "./lib/rules/MultilineTernary.mjs";
-import { PreferSmallTernary } from "./lib/rules/PreferSmallTernary.mjs";
-import { PreferUnescapedQuotes } from "./lib/rules/PreferUnescapedQuotes.mjs";
-import { SingleLineJsonObject } from "./lib/rules/SingleLineJsonObject.mjs";
-import { TypeAnnotationSpacing } from "./lib/rules/TypeAnnotationSpacing.mjs";
-import { VueFacingDecoratorPropRequirements } from "./lib/rules/VueFacingDecoratorPropRequirements.mjs";
+import { AssignAlignment } from './lib/rules/AssignAlignment.mjs';
+import { ClassFieldsAlignment } from './lib/rules/ClassFieldsAlignment.mjs';
+import { ClassMethodsNewline } from './lib/rules/ClassMethodsNewline.mjs';
+import { EnumValueAlignment } from './lib/rules/EnumValueAlignment.mjs';
+import { ImportAlignment } from './lib/rules/ImportAlignment.mjs';
+import { InterfaceLayout } from './lib/rules/InterfaceLayout.mjs';
+import { MultilineStatementPadding } from './lib/rules/MultilineStatementPadding.mjs';
+import { MultilineTernary } from './lib/rules/MultilineTernary.mjs';
+import { PreferSmallTernary } from './lib/rules/PreferSmallTernary.mjs';
+import { PreferUnescapedQuotes } from './lib/rules/PreferUnescapedQuotes.mjs';
+import { SingleLineJsonObject } from './lib/rules/SingleLineJsonObject.mjs';
+import { TypeAnnotationSpacing } from './lib/rules/TypeAnnotationSpacing.mjs';
+import { VueFacingDecoratorPropRequirements } from './lib/rules/VueFacingDecoratorPropRequirements.mjs';
 export const localRules = {
     'align-assign': AssignAlignment.toEslintRule(),
     'align-class-fields': ClassFieldsAlignment.toEslintRule(),

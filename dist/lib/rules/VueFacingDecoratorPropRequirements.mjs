@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { isLiteralTrue } from "../utils.mjs";
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
+import { isLiteralTrue } from '../utils.mjs';
 const COMPONENT_DECORATOR = 'Component';
 const PROP_DECORATOR = 'Prop';
 const PACKAGE_NAME = 'vue-facing-decorator';

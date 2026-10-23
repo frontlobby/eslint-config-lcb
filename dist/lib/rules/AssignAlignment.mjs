@@ -1,5 +1,5 @@
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { hasPropsWithValues } from "../utils.mjs";
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
+import { hasPropsWithValues } from '../utils.mjs';
 const messageAlign = 'Assignments should be aligned';
 /**
  * Align assignment statements on their equals signs.

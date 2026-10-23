@@ -10,23 +10,24 @@
   "dependencies": {
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
-    "@typescript-eslint/eslint-plugin": "^8.57.2",
-    "@typescript-eslint/parser": "^8.57.2",
+    "@typescript-eslint/eslint-plugin": "^8.72.0",
+    "@typescript-eslint/parser": "^8.72.0",
     "eslint-plugin-vue": "^10.8.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^17.4.0",
     "lodash": "^4.17.21",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "vue-eslint-parser": "^10.4.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.0",
     "@types/node": "^22.0.0",
     "eslint": "^10.1.0",
-    "mocha": "^10.1.0"
+    "mocha": "^10.1.0",
+    "typescript7": "npm:typescript@7.1.0-beta"
   },
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=26.12.1"
   },
   "main": "index.mjs",
   "exports": {
@@ -34,10 +35,10 @@
     "./base": "./baseRules.mjs"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "node_modules/typescript7/bin/tsc -p tsconfig.build.json",
     "prepare": "npm run build",
     "lint": "npm run build && eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node_modules/typescript7/bin/tsc --noEmit",
     "test": "npm run typecheck && mocha \"tests/**/*.mts\""
   }
 }

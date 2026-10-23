@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, isSingleLine, maxLenSchema } from "../utils.mjs";
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
+import { getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, isSingleLine, maxLenSchema } from '../utils.mjs';
 const defaultMaxLen = 100;
 /**
  * Collapse or expand object literals based on line length.

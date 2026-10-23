@@ -1,5 +1,5 @@
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getIndentOfLine, getLineEnding, hasCommentsInRange } from "../utils.mjs";
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
+import { getIndentOfLine, getLineEnding, hasCommentsInRange } from '../utils.mjs';
 const memberMessage = 'Class methods should be separated by exactly one blank line';
 const closingBraceMessage = 'The final class method should be followed by exactly one blank line';
 const getterSetterMessage = 'A getter and its setter should not be separated by a blank line';

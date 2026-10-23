@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { findAlignedToken, reportMisalignedRun, splitIntoRuns } from "../alignment.mjs";
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { isSingleLine } from "../utils.mjs";
+import { findAlignedToken, reportMisalignedRun, splitIntoRuns } from '../alignment.mjs';
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
+import { isSingleLine } from '../utils.mjs';
 const messageAlign = 'Enum values should be aligned';
 const messageSpacing = "Use a single space on each side of '=' in a single-line enum";
 /**

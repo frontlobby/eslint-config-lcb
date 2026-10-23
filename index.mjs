@@ -6,6 +6,7 @@
  *
  * Usage: import { config } from '@frontlobby/eslint-config-lcb';
  * Base-only: import { base } from '@frontlobby/eslint-config-lcb';
+ * Parser and plugin: import { tsParser, tsPlugin } from '@frontlobby/eslint-config-lcb';
  */
 import { config as baseConfig } from './baseRules.mjs';
 
@@ -26,3 +27,5 @@ export const config = [
 ];
 
 export { config as base } from './baseRules.mjs';
+export { default as tsParser } from '@typescript-eslint/parser';
+export { default as tsPlugin } from '@typescript-eslint/eslint-plugin';

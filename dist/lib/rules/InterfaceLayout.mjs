@@ -1,5 +1,5 @@
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { countBlankLines, getChildIndent, getLineIndent, isSingleLine } from "../utils.mjs";
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
+import { countBlankLines, getChildIndent, getLineIndent, isSingleLine } from '../utils.mjs';
 const defaultMaxLen = 130;
 const messageAlign = 'Interface fields should be aligned on their colons';
 const messageBlankLine = 'Unexpected blank line between interface fields';
