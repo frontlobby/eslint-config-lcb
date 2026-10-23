@@ -29,6 +29,14 @@ Use this in Node.js projects as follows:
 	];
 	```
 
+1. If your config needs the typescript-eslint parser or plugin itself, import them from this package
+	instead of depending on `@typescript-eslint/*` directly:
+	```
+	import { config, tsParser, tsPlugin } from '@frontlobby/eslint-config-lcb';
+	```
+	The app's own `typescript` is on version 7, which typescript-eslint can't use, so typescript-eslint
+	and the TypeScript 6 it runs on are installed inside this package.
+
 # Building
 
 ```sh

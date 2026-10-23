@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { findAlignedToken, reportMisalignedRun, splitIntoRuns } from "../alignment.mjs";
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { isSingleLine } from "../utils.mjs";
+import { findAlignedToken, reportMisalignedRun, splitIntoRuns } from '../alignment.mjs';
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
+import { isSingleLine } from '../utils.mjs';
 const messageAlign = 'Class field initializers should be aligned';
 /**
  * Align initialized class fields on their equals signs.

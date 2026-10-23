@@ -1,5 +1,5 @@
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { hasCommentsInRange, isSingleLine } from "../utils.mjs";
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
+import { hasCommentsInRange, isSingleLine } from '../utils.mjs';
 const message = 'Prefer a ternary expression when the if/else fits within maxLen';
 /**
  * Prefer ternary expressions for small if/else return and assignment patterns.

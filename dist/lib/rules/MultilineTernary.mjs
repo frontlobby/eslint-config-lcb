@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, hasCommentsInRange, isSingleLine, maxLenSchema } from "../utils.mjs";
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
+import { getChildIndent, getLine, getLineIndent, getReplacementLine, getUnwrapMaxLen, getWrapMaxLen, hasCommentsInRange, isSingleLine, maxLenSchema } from '../utils.mjs';
 const defaultMaxLen = 100;
 const splitMessage = 'Ternary should be split over multiple lines when it exceeds the line limit';
 const collapseMessage = 'Ternary should be on a single line when it fits within the line limit';

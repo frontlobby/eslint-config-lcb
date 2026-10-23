@@ -1,7 +1,7 @@
 import stylistic from '@stylistic/eslint-plugin';
-import { BaseESLintRule } from "../BaseESLintRule.mjs";
-import { getSourceCode } from "../utils.mjs";
-import { isAlignedMember } from "./InterfaceLayout.mjs";
+import { BaseESLintRule } from '../BaseESLintRule.mjs';
+import { getSourceCode } from '../utils.mjs';
+import { isAlignedMember } from './InterfaceLayout.mjs';
 const baseRule = stylistic.rules['type-annotation-spacing'];
 const ownedMessages = new Set(['unexpectedSpaceBefore', 'unexpectedSpaceBetween']);
 // A fixer whose edits only mark the text each fix would replace, so a fix can be inspected before its report is passed on

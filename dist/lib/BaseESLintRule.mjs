@@ -1,4 +1,4 @@
-import { getSourceCode } from "./utils.mjs";
+import { getSourceCode } from './utils.mjs';
 /**
  * Base class for all ESLint rules.
  */
